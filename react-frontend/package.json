@@ -2,22 +2,29 @@
   "name": "react-frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://localhost:7170",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.1.3",
+    "blurhash": "^2.0.4",
+    "cors": "^2.8.5",
     "http-proxy-middleware": "^2.0.6",
+    "moment": "^2.29.4",
     "react": "^18.2.0",
+    "react-blurhash": "^0.2.0",
     "react-dom": "^18.2.0",
+    "react-lazy-load-image-component": "^1.5.6",
+    "react-router-dom": "^6.4.3",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "set HTTPS=true&&react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "prestart": "node aspnetcore-https && node aspnetcore-react"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -39,6 +46,6 @@
   },
   "devDependencies": {
     "eslint-config-react-app": "^7.0.1",
-    "jest-editor-support": "^30.2.0"
+    "jest-editor-support": "^30.2.1"
   }
 }

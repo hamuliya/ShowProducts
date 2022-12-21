@@ -1,0 +1,98 @@
+:root{
+--image-height:15em;
+--image-height-reverse:-15em;
+--small-logo-size:1.5em;
+--large-logo-size:2em;
+}
+
+.item{
+  display: flex;
+ 
+}
+
+.image
+{
+  height: var(--image-height);
+
+}
+
+.back
+{
+  height: var(--image-height);
+}
+
+.back img
+{
+  object-fit: cover;   
+  width: 100%; 
+  overflow: hidden;
+ 
+  height: var(--image-height);
+}
+
+.front
+{
+   position:relative;
+   width: 100%;
+   background-color: transparent;
+   height: var(--image-height);
+   top:var(--image-height-reverse);
+   
+}
+
+.favour
+{
+  font-size: 1.5em;
+  color: blanchedalmond;
+  text-align: right;
+  padding: 0.5em;
+}
+
+.favour :hover
+{
+  color:red;
+  font-size: var(--large-logo-size);
+}
+
+:is(.search, .searchlogo)
+{
+  color: transparent; 
+}
+
+.search
+{
+  padding-top: 2em;
+  padding-bottom: 0.5em;
+  font-size:var(--small-logo-size);
+}
+
+
+
+.searchlogo :hover
+{
+  font-size: var(--large-logo-size);
+}
+
+
+@keyframes showfront {
+  0%{transform:translateY(0) }
+  100%{transform:translateY(15em) ;}
+}
+.image:hover  .front
+{
+   background-color:  rgba(141, 8, 8, 0.7);
+   animation: showfront 0.05s ease-out forwards reverse;
+}
+
+.image:hover :is(.search, .searchlogo)
+{
+  color: black;
+}
+
+.content
+{
+  padding: 2em;
+  color:black;
+  z-index: -1;
+}
+

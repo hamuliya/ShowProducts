@@ -1,0 +1,21 @@
+root {
+    --background-color-begin: rgba(0, 0, 0, 0.068);
+    --background-color-end: rgba(141, 8, 8, 0.418);
+  }
+
+.footer
+{
+    background: linear-gradient(
+        90deg,
+        var(--background-color-begin) 0%,
+        var(--background-color-end) 100%);
+   
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5em;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    position:sticky;
+}
+

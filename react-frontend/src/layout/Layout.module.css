@@ -1,0 +1,36 @@
+*,
+*::before,
+*::after{
+    box-sizing: border-box;
+}
+
+.layout{
+    width:100%;
+    height:98vh;
+    padding:0;
+    border: 0;
+    display: grid;
+    grid-template-rows: 2em 5.5em 82% auto;
+    grid-template-areas: 
+     "header"
+     "navbar"
+     "pagecontainer" 
+     "footer";
+     overflow-y: hidden;
+}
+.header
+{
+    grid-area: header;
+}
+.navbar
+{
+    grid-area: navbar;
+}
+.pagecontainer
+{
+    grid-area: pagecontainer;
+}
+.footer
+{
+    grid-area: footer;
+}

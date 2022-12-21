@@ -1,0 +1,7 @@
+﻿CREATE TABLE [dbo].[Product]
+(
+	[ProductId] INT NOT NULL PRIMARY KEY IDENTITY, 
+    [Title] NVARCHAR(100) NOT NULL, 
+    [UploadDate] DATETIME2 NOT NULL, 
+    [Detail] NVARCHAR(4000) NOT NULL
+)

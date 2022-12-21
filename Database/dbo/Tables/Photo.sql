@@ -1,8 +1,0 @@
-﻿CREATE TABLE [dbo].[Photo]
-(
-	[Id] INT NOT NULL PRIMARY KEY IDENTITY, 
-    [Title] NVARCHAR(100) NOT NULL, 
-    [Photo] NVARCHAR(100) NOT NULL, 
-    [UploadDate] DATE NOT NULL, 
-    [Detail] NVARCHAR(1000) NOT NULL
-)

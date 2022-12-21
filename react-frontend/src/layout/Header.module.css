@@ -1,0 +1,28 @@
+:root {
+    --background-color-begin: rgba(0, 0, 0, 0.068);
+    --background-color-end: rgba(141, 8, 8, 0.418);
+    --logo-color: rgba(141, 8, 8, 0.932);
+    --logo-size:3vw;
+}
+
+.header
+{
+    background: linear-gradient(
+        90deg,
+        var(--background-color-begin) 0%,
+        var(--background-color-end) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position:relative;
+
+}
+
+.logo {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: var(--logo-size);
+    text-decoration: none;
+    color: var(--logo-color);
+    padding-top: 1em;
+  
+  }

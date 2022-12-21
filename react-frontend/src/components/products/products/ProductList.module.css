@@ -1,0 +1,30 @@
+.itemlist {
+  display: grid;
+
+  grid-template-columns: 1fr;
+  padding:1em;
+  gap:1em;
+  text-align: center;
+  
+}
+
+@media (min-width: 30em) {
+  .itemlist {
+    grid-template-columns: repeat(2, 1fr);
+
+  }
+}
+
+@media (min-width: 40em) {
+  .itemlist {
+    grid-template-columns: repeat(3, 1fr);
+
+  }
+}
+
+@media (min-width: 50em) {
+  .itemlist {
+    grid-template-columns: repeat(5, 1fr);
+
+  }
+}

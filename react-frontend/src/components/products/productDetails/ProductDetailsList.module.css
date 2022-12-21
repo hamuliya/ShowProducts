@@ -1,0 +1,138 @@
+:root {
+  --background-color-large: rgb(248, 245, 245);
+  --background-color-small: rgb(248, 245, 245);
+  --background-color-content: rgba(141, 8, 8, 0.418);
+}
+.first {
+  position: relative;
+  padding: 1em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 0.2fr 2fr 0.2fr 1.5fr 1fr;
+  grid-template-areas:
+    ". large large large content ."
+    ". leftarrow small  rightarrow content .";
+}
+
+@media screen and (max-width: 26em) {
+  .grid {
+    grid-template-columns: 0.2fr 0.6fr 0.2fr;
+    grid-template-areas:
+      "leftarrow small  rightarrow "
+      "content content content";
+  }
+  .largeImage {
+    display: none;
+  }
+
+  .content {
+    margin: 1em;
+  }
+
+}
+
+@media screen and (max-width: 75em) {
+  .grid {
+    grid-template-columns: 0.2fr 0.6fr 0.2fr;
+    grid-template-areas:
+      ". large ."
+      "leftarrow small  rightarrow "
+      "content content content";
+  }
+}
+
+
+
+.content {
+  grid-area: content;
+  background-color: var(--background-color-content);
+  text-align: center;
+  padding: 1rem;
+  font-size: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.largeImage {
+  grid-area: large;
+  text-align: center;
+  background: var(--background-color-large);
+  padding: 2rem 0;
+}
+
+.largeImage img {
+  overflow: hidden;
+  width: 95%;
+}
+
+.zoomIn {
+  cursor: zoom-in;
+}
+
+.zoomOut {
+  cursor: zoom-out;
+}
+
+.smallAreaFrame {
+  height: 9em;
+  grid-area: small;
+  position: sticky;
+  overflow-y: hidden;
+  scrollbar-width: none; 
+
+
+
+}
+
+.smallAreaFrame::-webkit-scrollbar {
+  display: none;
+}
+
+.smallArea {
+  background-color: var(--background-color-small);
+  padding: 2rem 0;
+
+  /* position: relative; */
+  display: flex;
+  position: relative;
+  align-items: start;
+}
+
+.smallArea img {
+  padding: 0.1rem;
+  width: 8rem;
+  height: 8rem;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.rightarrow {
+  grid-area: rightarrow;
+  background-color: var(--background-color-small);
+  font-size: 2em;
+  text-align: center;
+  padding: 3rem 0;
+  color: black;
+  cursor: pointer;
+}
+
+.leftarrow {
+  grid-area: leftarrow;
+  background-color: var(--background-color-small);
+  font-size: 2em;
+  text-align: center;
+  padding: 3rem 0;
+  color: black;
+  cursor: pointer;
+}
+
+.dialog {
+  position: absolute;
+  background-color: black;
+  top: 0;
+  left: 0;
+}

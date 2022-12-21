@@ -1,0 +1,59 @@
+:root {
+  --background-color-begin: rgba(0, 0, 0, 0.068);
+  --background-color-end: rgba(141, 8, 8, 0.418);
+  --button-color:rgba(141, 8, 8, 0.418);
+  --font-color: rgb(248, 245, 245);
+  --font-color-hover:rgba(141, 8, 8, 0.418);
+  --font-size:2vw;
+  --btn-font-size:0.8vw;
+  --margin:3em;
+}
+
+.navbar {
+  display: grid;
+  background: linear-gradient(
+    90deg,
+    var(--background-color-begin) 0%,
+    var(--background-color-end) 100%);
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.5fr;
+  grid-template-areas: ". . . menu menu  button";
+  position: sticky;
+
+}
+
+.menu {
+  display: flex;
+  grid-area: menu; 
+  font-size: var(--font-size);
+  list-style: none;
+  justify-content: center;
+}
+
+.link {
+  padding: 1.5rem;
+  text-decoration: none;
+  color: var(--font-color);
+}
+
+.link:hover
+{
+  color: var(--font-color-hover);
+  }
+
+.btn{
+  grid-area: button;
+  width:8em;
+  height: 3em;
+  padding: 0.2em;
+  align-self: center;
+  font-size: var(--btn-font-size);
+  cursor: pointer;
+  justify-self: center;
+}
+
+.btn:hover
+{
+   background-color:var(--button-color);
+   border: 0.1em solid black;
+   color:white;
+}
