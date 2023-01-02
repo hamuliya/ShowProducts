@@ -4,6 +4,6 @@
 AS
 begin
     set nocount on;
-	SELECT RefreshTokenId,RefreshToken,Expiry from dbo.RefreshToken  where UserId=@UserId;
+	SELECT RefreshToken,Expiry from dbo.RefreshToken  where UserId=@UserId;
 end;
 

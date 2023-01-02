@@ -7,9 +7,9 @@ namespace WebAPI.Controllers;
 [ApiController]
 public class ProductController : ControllerBase
 {
-    private readonly IProductData _productData;
+    private readonly IProductService _productData;
 
-    public ProductController(IProductData productData)
+    public ProductController(IProductService productData)
     {
         _productData = productData;
     }
@@ -49,7 +49,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public IResult InsertProduct(ProductDBModel product)
+    public IResult InsertProduct(ProductEntity product)
     {
         try
         {
@@ -64,7 +64,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IResult> UpdateProduct(ProductDBModel product)
+    public async Task<IResult> UpdateProduct(ProductEntity product)
     {
         try
         {

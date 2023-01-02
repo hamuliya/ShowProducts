@@ -17,14 +17,14 @@ namespace WebAPI.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly IUserData _userData;
+    private readonly IUserService _userData;
     private readonly IHashing _hashing;
     private readonly IConfiguration _configuration;
     private readonly IToken _token;
     private readonly IEncode _encode;
-    private readonly IRefreshTokenData _refreshTokenData;
+    private readonly IRefreshTokenService _refreshTokenData;
 
-    public AuthController(IUserData userData,IHashing hashing,IConfiguration configuration,IToken token,IEncode encode,IRefreshTokenData refreshTokenData)
+    public AuthController(IUserService userData,IHashing hashing,IConfiguration configuration,IToken token,IEncode encode,IRefreshTokenService refreshTokenData)
     {
         _userData = userData;
         _hashing = hashing;
@@ -43,9 +43,9 @@ public class AuthController : ControllerBase
 
         var user = await _userData.GetUserByName(userRegister.UserName);
         if (user != null) return BadRequest("The user already exists.");
-        //
-
-        var userDB = new UserDBModel();
+        
+        
+        var userDB = new UserEntity();
 
         userDB.UserName = userRegister.UserName;
         userDB.FirstName = userRegister.FirstName;
@@ -57,16 +57,8 @@ public class AuthController : ControllerBase
         //Generate PasswordSalt
         userDB.Salt = _hashing.GenerateSalt(12);
 
-
-
         //Generate PasswordHash
-
         userDB.PasswordHash = _hashing.GeneratePasswordHash(userRegister.Password + userDB.Salt);
-
-       
-
-
-
 
         //Insert into DataBase
         try
@@ -77,12 +69,12 @@ public class AuthController : ControllerBase
            //Generate RefreshToken
            var refreshToken=_token.GenerateRefreshToken();
 
-           var refreshTokenDB = new RefreshTokenDBModel();
+
+           //Insert RefreshToken into Database
+           var refreshTokenDB = new RefreshTokenEntity();
             
             refreshTokenDB.UserId = userId;
             refreshTokenDB.RefreshToken = refreshToken;
-
-            //need the same?
             refreshTokenDB.Expiry = DateTime.Now.AddDays(7);
 
 
@@ -103,16 +95,15 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult> Login(UserLoginModel userLogin)
     {
-        //check the userName whether exists?
+        //check the userName whether exists
+        
         var userDB=await _userData.GetUserByName(userLogin.UserName);
-
 
         if (userDB == null)
         {
             return BadRequest("User does not exist.");
         }
        
-
 
         //Verify PasswordHash
         var verified=_hashing.Verify(userLogin.Password+ userDB.Salt,userDB.PasswordHash);
@@ -122,26 +113,92 @@ public class AuthController : ControllerBase
             return BadRequest("Wrong password.");
         }
 
+        //Default role is Visitor
         var role = "Visitor";
 
-        //Create Token
         if (userDB.Role != null)
-            role = userDB.Role;   
-        
-
-        var token= CreateToken(userDB.UserName, role);
-
-        //Generate RefreshToken
+            role = userDB.Role;
 
 
+        //issue a JWT to the user
+        var token = CreateToken(userDB.UserName, role);
 
-        //Set RefreshToken
+        var result=await RefreshToken(userDB.UserId);
 
+        if (result)
 
-        return Ok(token);
+        { return Ok(token); }
+
+        else { return BadRequest("RefreshToken is not updated"); }
 
     }
 
+
+
+    private async Task<bool>  RefreshToken(int userId)
+    {
+        //Generate RefreshToken       
+        var refreshToken = _token.GenerateRefreshToken();
+
+        // On the client
+
+        // Set the refresh token in an HttpOnly cookie when the user logs in
+
+        RefreshTokenModel refreshTokenModel = new RefreshTokenModel();
+        refreshTokenModel.Expiry = DateTime.Now.AddDays(7);
+        refreshTokenModel.Token = refreshToken;
+
+       
+
+        SetRefreshToken(refreshTokenModel);
+
+
+        //Update RefreshToken in the Database
+        var refreshTokenDB = new RefreshTokenEntity();
+
+
+        refreshTokenDB.UserId = userId;
+        refreshTokenDB.RefreshToken = refreshToken;
+        refreshTokenDB.Expiry = DateTime.Now.AddDays(7);
+        bool result = false;
+        try
+        {
+            await _refreshTokenData.UpdateRefreshTokenByUserId(refreshTokenDB);
+            result = true;
+            return result;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+
+            return result;
+
+        }
+       
+
+    }
+
+
+
+    // On the client
+
+    // Set the refresh token in an HttpOnly cookie when the user logs in
+    private void SetRefreshToken(RefreshTokenModel newRefreshToken)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = newRefreshToken.Expiry
+        };
+        Response.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
+    }
+
+
+
+
+
+    //issue a JWT to the user
     private string CreateToken(string userName,string role)
     {
 

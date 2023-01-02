@@ -6,23 +6,23 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DataAccess.Models;
-public class ProductDBModel
+public class ProductEntity
 {
     [Key]
     [Required]
-    public int ProductId { get; set; }
+    public int productId { get; set; }
 
 
     [Required]
     [MaxLength(100)]
-    public string? Title { get; set; }
+    public string? title { get; set; }
     
 
     [Required]
-    public DateTime UploadDate { get; set; }
+    public DateTime uploadDate { get; set; }
     
     [Required]
     [MaxLength(4000)]
-    public string? Detail { get; set; }
+    public string? detail { get; set; }
 
 }

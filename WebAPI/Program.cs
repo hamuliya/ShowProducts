@@ -42,7 +42,7 @@ builder.Services.AddSwaggerGen(options =>
 
 
 
-IConfiguration Configuration = new ConfigurationBuilder()
+IConfiguration configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables()
     .AddCommandLine(args)
@@ -56,18 +56,24 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(o =>
 {
+    var jwtSection = configuration.GetSection("Jwt");
+
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey
-        (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = false,
-        ValidateIssuerSigningKey = true
+        ValidateIssuer = jwtSection.GetValue<bool>("ValidateIssuer"),
+        ValidateAudience = jwtSection.GetValue<bool>("ValidateAudience"),
+        ValidateLifetime = jwtSection.GetValue<bool>("ValidateLifetime"),
+        ValidateIssuerSigningKey = jwtSection.GetValue<bool>("ValidateIssuerSigningKey"),
+        ValidIssuer = jwtSection["Issuer"],
+        ValidAudience = jwtSection["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]))
     };
 });
+
+
+
+
+
 
 
 builder.Services.AddAuthorization();
@@ -75,9 +81,9 @@ builder.Services.AddAuthorization();
 
 
 builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
-builder.Services.AddSingleton<IProductData, ProductData>();
-builder.Services.AddSingleton<IUserData, UserData>();
-builder.Services.AddSingleton<IRefreshTokenData, RefreshTokenData>();
+builder.Services.AddSingleton<IProductService, ProductService>();
+builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
 
 builder.Services.AddTransient<IHashing, BCryptHashing>();
 builder.Services.AddTransient<IToken, Token>();
@@ -109,7 +115,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 //use for minial api
-
 //app.ConfigureApi();
 
 //use for upload files
