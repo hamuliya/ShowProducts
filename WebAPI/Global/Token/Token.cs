@@ -1,14 +1,21 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using WebAPI.Global.Encode;
 
 namespace WebAPI.Global.Token
 {
     public class Token : IToken
     {
+        private readonly IConfiguration _configuration;
 
+        public Token(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
         public string GenerateAccessToken(IEnumerable<Claim> claims, string issuer, string audience, DateTime expires, byte[] encodeKey, string algorithm = SecurityAlgorithms.HmacSha256)
         {
             var secretKey = new SymmetricSecurityKey(encodeKey);
@@ -24,6 +31,8 @@ namespace WebAPI.Global.Token
             return tokenString;
         }
 
+
+
         public string GenerateRefreshToken(int numberLength = 64)
         {
             var randomNumber = new byte[numberLength];
@@ -34,18 +43,26 @@ namespace WebAPI.Global.Token
             }
         }
 
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string issuer, string audience, byte[] encodeKey, string token, bool validateAudience = true, bool validateIssuer = true,
-            bool validateIssuerSigningKey = true, bool validateLifetime = true, string algorithm = SecurityAlgorithms.HmacSha256)
+
+  
+
+
+
+
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string issuer, string audience, byte[] encodeKey, string token, string algorithm = SecurityAlgorithms.HmacSha256)
         {
+
+            var jwtSection = _configuration.GetSection("Jwt");
+
             var tokenValidationParameters = new TokenValidationParameters
             {
-                ValidateAudience = validateAudience,
+                ValidateIssuer = jwtSection.GetValue<bool>("ValidateIssuer"),
+                ValidateAudience = jwtSection.GetValue<bool>("ValidateAudience"),
+                ValidateLifetime = jwtSection.GetValue<bool>("ValidateLifetime"),
+                ValidateIssuerSigningKey = jwtSection.GetValue<bool>("ValidateIssuerSigningKey"),
                 ValidAudience = audience,
-                ValidateIssuer = validateIssuer,
                 ValidIssuer = issuer,
-                ValidateIssuerSigningKey = validateIssuerSigningKey,
                 IssuerSigningKey = new SymmetricSecurityKey(encodeKey),
-                ValidateLifetime = validateLifetime
             };
 
 
@@ -59,3 +76,5 @@ namespace WebAPI.Global.Token
         }
     }
 }
+
+

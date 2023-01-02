@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Models;
 
-public class RefreshTokenDBModel
+public class RefreshTokenEntity
 {
     [Required]
     
-    public int UserId { get; set; }
+    public int userId { get; set; }
 
     [Required]
     [MaxLength(1000)]
-    public string RefreshToken { get; set; }
+    public string? refreshToken { get; set; }
 
     [Required]
-    public DateTime Expiry { get; set; }
+    public DateTime expiry { get; set; }
 }

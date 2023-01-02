@@ -9,10 +9,10 @@ namespace WebAPI.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
-    private readonly IUserData _userData;
+    private readonly IUserService _userData;
   
 
-    public UserController(IUserData userData)
+    public UserController(IUserService userData)
     {
         _userData = userData;
       

@@ -14,7 +14,7 @@ public class SqlDataAccess : ISqlDataAccess
         _config = config;
     }
 
-    public async Task<IEnumerable<T>> LoadData<T, U>(string storeProcedure,U parameters,string connectionId = "Default")
+    public async Task<IEnumerable<T>> LoadDataAsync<T, U>(string storeProcedure, U parameters, string connectionId = "Default")
     {
         using IDbConnection connection = new SqlConnection(_config.GetConnectionString(connectionId));
         return await connection.QueryAsync<T>(storeProcedure, parameters,
@@ -24,13 +24,16 @@ public class SqlDataAccess : ISqlDataAccess
 
 
 
-    public int SaveData<T>(string StoreProcedure, T Parameters, string connectionId = "Default")
+
+
+
+    public async Task<int> SaveDataAsync<T>(string StoreProcedure, T Parameters, string connectionId = "Default")
     {
         int id = 0;
 
         using (IDbConnection connection = new SqlConnection(_config.GetConnectionString(connectionId)))
         {
-            var result = connection.ExecuteScalar(StoreProcedure, Parameters, commandType: CommandType.StoredProcedure);
+            var result = await connection.ExecuteScalarAsync(StoreProcedure, Parameters, commandType: CommandType.StoredProcedure);
 
             bool IsVaildInt = int.TryParse(result.ToString(), out id);
             if (IsVaildInt == false)
@@ -43,7 +46,7 @@ public class SqlDataAccess : ISqlDataAccess
 
 
 
-    public async Task ExecData<T>(string storeProcedure,T parameters,string connectionId = "Default")
+    public async Task ExecDataAsync<T>(string storeProcedure, T parameters, string connectionId = "Default")
     {
         using (IDbConnection connection = new SqlConnection(_config.GetConnectionString(connectionId)))
         {

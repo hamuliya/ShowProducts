@@ -8,41 +8,41 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Models;
 
-public class UserDBModel
+public class UserEntity
 {
 
     [Key]
     [Required]
-    public int UserId { get; set; }
+    public int userId { get; set; }
 
     [Required]
     [MaxLength(50)]
-    public string? UserName { get; set; }
+    public string? userName { get; set; }
     [Required]
     [MaxLength(300)]
-    public string? PasswordHash { get; set; }
+    public string? passwordHash { get; set; }
 
     [Required]
     [MaxLength(50)]
-    public string? Salt { get; set; }
+    public string? salt { get; set; }
 
     [Required]
     [MaxLength(100)]
-    public string? EmailAddress { get; set; }
+    public string? emailAddress { get; set; }
 
-    public int RoleId { get; set;}
+    public int roleId { get; set;}
 
     [Required]
     [MaxLength(50)]
-    public string? FirstName { get; set;}
+    public string? firstName { get; set;}
     [Required]
     [MaxLength(50)]
-    public string? LastName { get; set;}
+    public string? lastName { get; set;}
 
     [Required]
-    public DateTime CreateDate { get; set;}
+    public DateTime createDate { get; set;}
 
-    public string? Role { get; }
+    public string? role { get; }
 
 
    
