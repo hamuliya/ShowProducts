@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Models;
 
-public class RefreshTokenEntity
+public class TokenEntity
 {
     [Required]
     

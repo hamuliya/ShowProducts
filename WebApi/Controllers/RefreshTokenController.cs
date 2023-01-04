@@ -28,7 +28,7 @@ namespace WebAPI.Controllers
         }
 
 
-        //??
+        
 
         [HttpPost]
         [Route("RefreshToken")]
@@ -38,7 +38,7 @@ namespace WebAPI.Controllers
             {
                 if ((tokenModel is null)||(tokenModel.AccessToken is null) || (tokenModel.RefreshToken is null))
 
-                        return BadRequest("Invalid client request");
+                        return BadRequest("Invalid client request,please fill in the AccessToken and RefreshToken");
 
                 string? accessToken = tokenModel.AccessToken;
                 string? refreshToken = tokenModel.RefreshToken;
@@ -49,12 +49,10 @@ namespace WebAPI.Controllers
 
                 var principal = _token.GetPrincipalFromExpiredToken(tokenModel.Issuer, tokenModel.Audience, encodeKey, accessToken);
 
+                
                 var username = principal.Identity.Name; //this is mapped to the Name claim by default
 
                 var userDB =await _userData.GetUserByNameAsync(username);
-
-               
-
 
                 if (userDB is null) return BadRequest("Invalid client request");
 
@@ -80,7 +78,7 @@ namespace WebAPI.Controllers
                 refreshTokenDB.Expiry = expires;
                 refreshTokenDB.UserId = userDB.UserId;
 
-                // Update refresh token
+                // Update refresh token to database
 
                 await _refreshTokenData.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
 

@@ -4,8 +4,8 @@ namespace DataAccess.Data
 {
     public interface IRefreshTokenService
     {
-        Task<RefreshTokenEntity> GetRefreshTokenByUserIdAsync(int userId);
-        Task InsertRefreshTokenAsync(RefreshTokenEntity refreshToken);
-        Task UpdateRefreshTokenByUserIdAsync(RefreshTokenEntity refreshToken);
+        Task<TokenEntity> GetRefreshTokenByUserIdAsync(int userId);
+        Task InsertRefreshTokenAsync(TokenEntity refreshToken);
+        Task UpdateRefreshTokenByUserIdAsync(TokenEntity refreshToken);
     }
 }

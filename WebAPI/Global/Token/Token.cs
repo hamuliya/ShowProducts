@@ -68,7 +68,9 @@ namespace WebAPI.Global.Token
 
             var tokenHandler = new JwtSecurityTokenHandler();
             SecurityToken securityToken;
+
             var claimsprincipal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
+
             var jwtSecurityToken = securityToken as JwtSecurityToken;
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(algorithm, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("Invalid token");

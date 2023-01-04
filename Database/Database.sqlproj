@@ -71,10 +71,10 @@
     <Build Include="dbo\StoreProcedures\spUser_GetByName.sql" />
     <Build Include="dbo\Tables\Role.sql" />
     <Build Include="dbo\StoreProcedures\spUser_Insert.sql" />
-    <Build Include="dbo\Tables\RefreshToken.sql" />
-    <Build Include="dbo\StoreProcedures\spRefreshToken_UpdateByUserId.sql" />
-    <Build Include="dbo\StoreProcedures\spRefreshToken_GetByUserId.sql" />
-    <Build Include="dbo\StoreProcedures\spRefreshToken_Insert.sql" />
+    <Build Include="dbo\Tables\Token.sql" />
+    <Build Include="dbo\StoreProcedures\spToken_UpdateByUserId.sql" />
+    <Build Include="dbo\StoreProcedures\spToken_GetByUserId.sql" />
+    <Build Include="dbo\StoreProcedures\spToken_Insert.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Script.PostDeployment.sql" />
