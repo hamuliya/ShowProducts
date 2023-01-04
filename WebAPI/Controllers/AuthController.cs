@@ -47,18 +47,18 @@ public class AuthController : ControllerBase
         
         var userDB = new UserEntity();
 
-        userDB.userName = userRegister.UserName;
-        userDB.firstName = userRegister.FirstName;
-        userDB.lastName = userRegister.LastName;
-        userDB.emailAddress = userRegister.EmailAddress;
-        userDB.createDate = userRegister.CreateDate;
+        userDB.UserName = userRegister.UserName;
+        userDB.FirstName = userRegister.FirstName;
+        userDB.LastName = userRegister.LastName;
+        userDB.EmailAddress = userRegister.EmailAddress;
+        userDB.CreateDate = userRegister.CreateDate;
 
 
         //Generate PasswordSalt
-        userDB.salt = _hashing.GenerateSalt(12);
+        userDB.Salt = _hashing.GenerateSalt(12);
 
         //Generate PasswordHash
-        userDB.passwordHash = _hashing.GeneratePasswordHash(userRegister.Password + userDB.salt);
+        userDB.PasswordHash = _hashing.GeneratePasswordHash(userRegister.Password + userDB.Salt);
 
         //Insert into DataBase
         try
@@ -73,9 +73,9 @@ public class AuthController : ControllerBase
            //Insert RefreshToken into Database
            var refreshTokenDB = new RefreshTokenEntity();
             
-            refreshTokenDB.userId = userId;
-            refreshTokenDB.refreshToken = refreshToken;
-            refreshTokenDB.expiry = DateTime.Now.AddDays(7);
+            refreshTokenDB.UserId = userId;
+            refreshTokenDB.RefreshToken = refreshToken;
+            refreshTokenDB.Expiry = DateTime.Now.AddDays(7);
 
 
             await _refreshTokenData.InsertRefreshTokenAsync(refreshTokenDB);
@@ -106,7 +106,7 @@ public class AuthController : ControllerBase
        
 
         //Verify PasswordHash
-        var verified=_hashing.Verify(userLogin.Password+ userDB.salt,userDB.passwordHash);
+        var verified=_hashing.Verify(userLogin.Password+ userDB.Salt,userDB.PasswordHash);
 
         if (!verified)
         {
@@ -116,14 +116,14 @@ public class AuthController : ControllerBase
         //Default role is Visitor
         var role = "Visitor";
 
-        if (userDB.role != null)
-            role = userDB.role;
+        if (userDB.Role != null)
+            role = userDB.Role;
 
 
         //issue a JWT to the user
-        var token = CreateToken(userDB.userName, role);
+        var token = CreateToken(userDB.UserName, role);
 
-        var result=await RefreshToken(userDB.userId);
+        var result=await RefreshToken(userDB.UserId);
 
         if (result)
 
@@ -157,9 +157,9 @@ public class AuthController : ControllerBase
         var refreshTokenDB = new RefreshTokenEntity();
 
 
-        refreshTokenDB.userId = userId;
-        refreshTokenDB.refreshToken = refreshToken;
-        refreshTokenDB.expiry = DateTime.Now.AddDays(7);
+        refreshTokenDB.UserId = userId;
+        refreshTokenDB.RefreshToken = refreshToken;
+        refreshTokenDB.Expiry = DateTime.Now.AddDays(7);
         bool result = false;
         try
         {

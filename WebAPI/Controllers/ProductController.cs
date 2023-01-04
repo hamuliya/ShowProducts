@@ -68,7 +68,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            await _productData.UpdateProduct(product);
+            await _productData.UpdateProductAsync(product);
             return Results.Ok();
         }
         catch (Exception ex)
@@ -81,7 +81,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            await _productData.DeleteProduct(id);
+            await _productData.DeleteProductByIdAsync(id);
             return Results.Ok();
         }
         catch (Exception ex)
