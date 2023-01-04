@@ -13,36 +13,36 @@ public class UserEntity
 
     [Key]
     [Required]
-    public int userId { get; set; }
+    public int UserId { get; set; }
 
     [Required]
     [MaxLength(50)]
-    public string? userName { get; set; }
+    public string? UserName { get; set; }
     [Required]
     [MaxLength(300)]
-    public string? passwordHash { get; set; }
+    public string? PasswordHash { get; set; }
 
     [Required]
     [MaxLength(50)]
-    public string? salt { get; set; }
+    public string? Salt { get; set; }
 
     [Required]
     [MaxLength(100)]
-    public string? emailAddress { get; set; }
+    public string? EmailAddress { get; set; }
 
-    public int roleId { get; set;}
+    public int RoleId { get; set;}
 
     [Required]
     [MaxLength(50)]
-    public string? firstName { get; set;}
+    public string? FirstName { get; set;}
     [Required]
     [MaxLength(50)]
-    public string? lastName { get; set;}
+    public string? LastName { get; set;}
 
     [Required]
-    public DateTime createDate { get; set;}
+    public DateTime CreateDate { get; set;}
 
-    public string? role { get; }
+    public string? Role { get; }
 
 
    

@@ -22,7 +22,7 @@ public class ProductService : IProductService
     public async Task<ProductEntity?> GetProductByIdAsync(int productId)
     {
         var results = await _db.LoadDataAsync<ProductEntity, dynamic>
-            ("dbo.spProduct_GetById", new { productId = productId });
+            ("dbo.spProduct_GetById", new { ProductId = productId });
         if (results is null) return null;
         return results.FirstOrDefault();
 
@@ -30,7 +30,7 @@ public class ProductService : IProductService
 
     public async Task<int> InsertProductAsync(ProductEntity product)
     {
-        int id = await _db.SaveDataAsync("dbo.spProduct_Insert", new { product.productId, product.title, product.uploadDate, product.detail });
+        int id = await _db.SaveDataAsync("dbo.spProduct_Insert", new { product.ProductId, product.Title, product.UploadDate, product.Detail });
         return id;
     }
 
@@ -38,6 +38,6 @@ public class ProductService : IProductService
         await _db.ExecDataAsync("dbo.spProduct_Update", product);
 
     public async Task DeleteProductByIdAsync(int productId) =>
-        await _db.ExecDataAsync("dbo.spProduct_Delete", new { productId = productId });
+        await _db.ExecDataAsync("dbo.spProduct_Delete", new { ProductId = productId });
 
 }

@@ -21,7 +21,7 @@ namespace DataAccess.Data
         public async Task<UserEntity> GetUserByNameAsync(string userName)
         {
             IEnumerable<UserEntity>? results = await _db.LoadDataAsync<UserEntity, dynamic>
-           ("dbo.spUser_GetByName", new { userName = userName });
+           ("dbo.spUser_GetByName", new { UserName = userName });
 
 
             if (results is null) return null;
@@ -34,7 +34,7 @@ namespace DataAccess.Data
         {
 
 
-            int userId = await _db.SaveDataAsync("dbo.spUser_Insert", new { user.userId, user.userName, user.passwordHash, user.salt, user.emailAddress, user.firstName, user.lastName });
+            int userId = await _db.SaveDataAsync("dbo.spUser_Insert", new { user.UserId, user.UserName, user.PasswordHash, user.Salt, user.EmailAddress, user.FirstName, user.LastName });
             return userId;
 
         }

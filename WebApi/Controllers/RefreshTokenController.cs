@@ -59,13 +59,13 @@ namespace WebAPI.Controllers
                 if (userDB is null) return BadRequest("Invalid client request");
 
 
-                var refreshTokenDB =await _refreshTokenData.GetRefreshTokenByUserIdAsync(userDB.userId);
+                var refreshTokenDB =await _refreshTokenData.GetRefreshTokenByUserIdAsync(userDB.UserId);
 
                 
 
 
 
-                if (refreshTokenDB is null || refreshTokenDB.refreshToken != refreshToken || refreshTokenDB.expiry <= DateTime.Now)
+                if (refreshTokenDB is null || refreshTokenDB.RefreshToken != refreshToken || refreshTokenDB.Expiry <= DateTime.Now)
                     return BadRequest("Invalid client request");
 
 
@@ -76,9 +76,9 @@ namespace WebAPI.Controllers
                 var newAccessToken = _token.GenerateAccessToken(principal.Claims, issuer, audience, expires, encodeKey);
 
                 var newRefreshToken = _token.GenerateRefreshToken();
-                refreshTokenDB.refreshToken = newRefreshToken;
-                refreshTokenDB.expiry = expires;
-                refreshTokenDB.userId = userDB.userId;
+                refreshTokenDB.RefreshToken = newRefreshToken;
+                refreshTokenDB.Expiry = expires;
+                refreshTokenDB.UserId = userDB.UserId;
 
                 // Update refresh token
 

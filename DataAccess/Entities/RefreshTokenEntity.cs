@@ -11,12 +11,12 @@ public class RefreshTokenEntity
 {
     [Required]
     
-    public int userId { get; set; }
+    public int UserId { get; set; }
 
     [Required]
     [MaxLength(1000)]
-    public string? refreshToken { get; set; }
+    public string? RefreshToken { get; set; }
 
     [Required]
-    public DateTime expiry { get; set; }
+    public DateTime Expiry { get; set; }
 }

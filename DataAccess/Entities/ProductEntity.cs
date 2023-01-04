@@ -10,19 +10,19 @@ public class ProductEntity
 {
     [Key]
     [Required]
-    public int productId { get; set; }
+    public int ProductId { get; set; }
 
 
     [Required]
     [MaxLength(100)]
-    public string? title { get; set; }
+    public string? Title { get; set; }
     
 
     [Required]
-    public DateTime uploadDate { get; set; }
+    public DateTime UploadDate { get; set; }
     
     [Required]
     [MaxLength(4000)]
-    public string? detail { get; set; }
+    public string? Detail { get; set; }
 
 }
