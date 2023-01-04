@@ -20,7 +20,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            var products = await _productData.GetProducts();
+            var products = await _productData.GetAllProductsAsync();
             return Results.Ok(products);
         }
         catch (Exception ex)
@@ -38,7 +38,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            var product = await _productData.GetProduct(id);
+            var product = await _productData.GetProductByIdAsync(id);
             if (product == null) return Results.NotFound();
             return Results.Ok(product);
         }
@@ -49,12 +49,12 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public IResult InsertProduct(ProductEntity product)
+    public async Task<IResult> InsertProduct(ProductEntity product)
     {
         try
         {
 
-            int id =  _productData.InsertProduct(product);
+            int id =await  _productData.InsertProductAsync(product);
             return Results.Ok(id);
         }
         catch (Exception ex)

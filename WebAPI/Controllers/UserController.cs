@@ -25,7 +25,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            var user= await _userData.GetUserByName(userName);
+            var user= await _userData.GetUserByNameAsync(userName);
             if (user == null) return Results.NotFound();
             return Results.Ok(user);
         }

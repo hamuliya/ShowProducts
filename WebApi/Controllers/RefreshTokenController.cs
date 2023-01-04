@@ -51,7 +51,7 @@ namespace WebAPI.Controllers
 
                 var username = principal.Identity.Name; //this is mapped to the Name claim by default
 
-                var userDB =await _userData.GetUserByName(username);
+                var userDB =await _userData.GetUserByNameAsync(username);
 
                
 
@@ -59,13 +59,13 @@ namespace WebAPI.Controllers
                 if (userDB is null) return BadRequest("Invalid client request");
 
 
-                var refreshTokenTask = _refreshTokenData.GetRefreshTokenByUserId(userDB.UserId);
+                var refreshTokenDB =await _refreshTokenData.GetRefreshTokenByUserIdAsync(userDB.userId);
 
-                var refreshTokenDB = await refreshTokenTask;
+                
 
 
 
-                if (refreshTokenDB is null || refreshTokenDB.RefreshToken != refreshToken || refreshTokenDB.Expiry <= DateTime.Now)
+                if (refreshTokenDB is null || refreshTokenDB.refreshToken != refreshToken || refreshTokenDB.expiry <= DateTime.Now)
                     return BadRequest("Invalid client request");
 
 
@@ -76,13 +76,13 @@ namespace WebAPI.Controllers
                 var newAccessToken = _token.GenerateAccessToken(principal.Claims, issuer, audience, expires, encodeKey);
 
                 var newRefreshToken = _token.GenerateRefreshToken();
-                refreshTokenDB.RefreshToken = newRefreshToken;
-                refreshTokenDB.Expiry = expires;
-                refreshTokenDB.UserId = userDB.UserId;
+                refreshTokenDB.refreshToken = newRefreshToken;
+                refreshTokenDB.expiry = expires;
+                refreshTokenDB.userId = userDB.userId;
 
                 // Update refresh token
 
-                await _refreshTokenData.UpdateRefreshTokenByUserId(refreshTokenDB);
+                await _refreshTokenData.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
 
                 return Ok(new TokenModel()
                 {

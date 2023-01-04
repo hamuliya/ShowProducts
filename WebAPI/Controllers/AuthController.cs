@@ -41,29 +41,29 @@ public class AuthController : ControllerBase
     {
         //Check the UserName whether exists?
 
-        var user = await _userData.GetUserByName(userRegister.UserName);
+        var user = await _userData.GetUserByNameAsync(userRegister.UserName);
         if (user != null) return BadRequest("The user already exists.");
         
         
         var userDB = new UserEntity();
 
-        userDB.UserName = userRegister.UserName;
-        userDB.FirstName = userRegister.FirstName;
-        userDB.LastName = userRegister.LastName;
-        userDB.EmailAddress = userRegister.EmailAddress;
-        userDB.CreateDate = userRegister.CreateDate;
+        userDB.userName = userRegister.UserName;
+        userDB.firstName = userRegister.FirstName;
+        userDB.lastName = userRegister.LastName;
+        userDB.emailAddress = userRegister.EmailAddress;
+        userDB.createDate = userRegister.CreateDate;
 
 
         //Generate PasswordSalt
-        userDB.Salt = _hashing.GenerateSalt(12);
+        userDB.salt = _hashing.GenerateSalt(12);
 
         //Generate PasswordHash
-        userDB.PasswordHash = _hashing.GeneratePasswordHash(userRegister.Password + userDB.Salt);
+        userDB.passwordHash = _hashing.GeneratePasswordHash(userRegister.Password + userDB.salt);
 
         //Insert into DataBase
         try
         {
-           int userId= _userData.InsertUser(userDB);
+           int userId=await _userData.InsertUserAsync(userDB);
            if (userId ==null) return BadRequest("Not inserted ");
             
            //Generate RefreshToken
@@ -73,12 +73,12 @@ public class AuthController : ControllerBase
            //Insert RefreshToken into Database
            var refreshTokenDB = new RefreshTokenEntity();
             
-            refreshTokenDB.UserId = userId;
-            refreshTokenDB.RefreshToken = refreshToken;
-            refreshTokenDB.Expiry = DateTime.Now.AddDays(7);
+            refreshTokenDB.userId = userId;
+            refreshTokenDB.refreshToken = refreshToken;
+            refreshTokenDB.expiry = DateTime.Now.AddDays(7);
 
 
-            await _refreshTokenData.InsertRefreshToken(refreshTokenDB);
+            await _refreshTokenData.InsertRefreshTokenAsync(refreshTokenDB);
 
 
             return Ok("Inserted successfully");
@@ -97,7 +97,7 @@ public class AuthController : ControllerBase
     {
         //check the userName whether exists
         
-        var userDB=await _userData.GetUserByName(userLogin.UserName);
+        var userDB=await _userData.GetUserByNameAsync(userLogin.UserName);
 
         if (userDB == null)
         {
@@ -106,7 +106,7 @@ public class AuthController : ControllerBase
        
 
         //Verify PasswordHash
-        var verified=_hashing.Verify(userLogin.Password+ userDB.Salt,userDB.PasswordHash);
+        var verified=_hashing.Verify(userLogin.Password+ userDB.salt,userDB.passwordHash);
 
         if (!verified)
         {
@@ -116,14 +116,14 @@ public class AuthController : ControllerBase
         //Default role is Visitor
         var role = "Visitor";
 
-        if (userDB.Role != null)
-            role = userDB.Role;
+        if (userDB.role != null)
+            role = userDB.role;
 
 
         //issue a JWT to the user
-        var token = CreateToken(userDB.UserName, role);
+        var token = CreateToken(userDB.userName, role);
 
-        var result=await RefreshToken(userDB.UserId);
+        var result=await RefreshToken(userDB.userId);
 
         if (result)
 
@@ -157,13 +157,13 @@ public class AuthController : ControllerBase
         var refreshTokenDB = new RefreshTokenEntity();
 
 
-        refreshTokenDB.UserId = userId;
-        refreshTokenDB.RefreshToken = refreshToken;
-        refreshTokenDB.Expiry = DateTime.Now.AddDays(7);
+        refreshTokenDB.userId = userId;
+        refreshTokenDB.refreshToken = refreshToken;
+        refreshTokenDB.expiry = DateTime.Now.AddDays(7);
         bool result = false;
         try
         {
-            await _refreshTokenData.UpdateRefreshTokenByUserId(refreshTokenDB);
+            await _refreshTokenData.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
             result = true;
             return result;
 
