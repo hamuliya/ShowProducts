@@ -18,5 +18,14 @@ public class TokenEntity
     public string? RefreshToken { get; set; }
 
     [Required]
-    public DateTime Expiry { get; set; }
+    public DateTime RefreshTokenExpiry { get; set; }
+
+
+    [Required]
+    [MaxLength(1000)]
+    public string? AccessToken { get; set; }
+
+    [Required]
+    public DateTime AccessTokenExpiry { get; set; }
+}
 }

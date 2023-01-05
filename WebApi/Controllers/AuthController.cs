@@ -60,7 +60,7 @@ public class AuthController : ControllerBase
         //Generate PasswordHash
         userDB.PasswordHash = _hashing.GeneratePasswordHash(userRegister.Password + userDB.Salt);
 
-        //Insert into DataBase
+        //Insert User into DataBase
         try
         {
            int userId=await _userData.InsertUserAsync(userDB);
@@ -71,7 +71,7 @@ public class AuthController : ControllerBase
 
 
            //Insert RefreshToken into Database
-           var refreshTokenDB = new RefreshTokenEntity();
+           var refreshTokenDB = new TokenEntity();
             
             refreshTokenDB.UserId = userId;
             refreshTokenDB.RefreshToken = refreshToken;
@@ -154,7 +154,7 @@ public class AuthController : ControllerBase
 
 
         //Update RefreshToken in the Database
-        var refreshTokenDB = new RefreshTokenEntity();
+        var refreshTokenDB = new TokenEntity();
 
 
         refreshTokenDB.UserId = userId;
@@ -196,6 +196,8 @@ public class AuthController : ControllerBase
 
 
 
+
+   
 
 
     //issue a JWT to the user

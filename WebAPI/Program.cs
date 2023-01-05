@@ -83,7 +83,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
 builder.Services.AddSingleton<IProductService, ProductService>();
 builder.Services.AddSingleton<IUserService, UserService>();
-builder.Services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
+builder.Services.AddSingleton<IRefreshTokenService, TokenService>();
 
 builder.Services.AddTransient<IHashing, BCryptHashing>();
 builder.Services.AddTransient<IToken, Token>();
