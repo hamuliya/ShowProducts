@@ -31,7 +31,7 @@ public class TokenService : ITokenService
 
     public async Task<TokenEntity> GetTokenByUserIdAsync(int userId)
     {
-        IEnumerable<TokenEntity> result = await _db.LoadDataAsync<TokenEntity, dynamic>("dbo.Token_GetByUserId", new { UserId = userId });
+        IEnumerable<TokenEntity> result = await _db.LoadDataAsync<TokenEntity, dynamic>("dbo.spToken_GetByUserId", new { UserId = userId });
         if (result is null) return null;
         return result.FirstOrDefault();
     }
