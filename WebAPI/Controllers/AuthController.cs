@@ -10,6 +10,7 @@ using WebAPI.Global.Hashing;
 using WebAPI.Global.Token;
 using WebAPI.Models.Auth;
 using WebAPI.Models.Login;
+using WebAPI.Models.Token;
 
 namespace WebAPI.Controllers;
 
@@ -17,21 +18,21 @@ namespace WebAPI.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly IUserService _userData;
+    private readonly IUserService _userService;
     private readonly IHashing _hashing;
     private readonly IConfiguration _configuration;
     private readonly IToken _token;
     private readonly IEncode _encode;
-    private readonly IRefreshTokenService _refreshTokenData;
+    private readonly ITokenService _tokenService;
 
-    public AuthController(IUserService userData,IHashing hashing,IConfiguration configuration,IToken token,IEncode encode,IRefreshTokenService refreshTokenData)
+    public AuthController(IUserService userService,IHashing hashing,IConfiguration configuration,IToken token,IEncode encode,ITokenService tokenService)
     {
-        _userData = userData;
+        _userService = userService;
         _hashing = hashing;
         _configuration = configuration;
         _token = token;
         _encode = encode;
-        _refreshTokenData = refreshTokenData;
+        _tokenService = tokenService;
     }
 
 
@@ -41,7 +42,7 @@ public class AuthController : ControllerBase
     {
         //Check the UserName whether exists?
 
-        var user = await _userData.GetUserByNameAsync(userRegister.UserName);
+        var user = await _userService.GetUserByNameAsync(userRegister.UserName);
         if (user != null) return BadRequest("The user already exists.");
         
         
@@ -63,7 +64,7 @@ public class AuthController : ControllerBase
         //Insert User into DataBase
         try
         {
-           int userId=await _userData.InsertUserAsync(userDB);
+           int userId=await _userService.InsertUserAsync(userDB);
            if (userId ==null) return BadRequest("Not inserted ");
             
            //Generate RefreshToken
@@ -75,10 +76,10 @@ public class AuthController : ControllerBase
             
             refreshTokenDB.UserId = userId;
             refreshTokenDB.RefreshToken = refreshToken;
-            refreshTokenDB.Expiry = DateTime.Now.AddDays(7);
+            refreshTokenDB.RefreshTokenExpiry = DateTime.Now.AddDays(7);
 
 
-            await _refreshTokenData.InsertRefreshTokenAsync(refreshTokenDB);
+            await _tokenService.InsertTokenAsync(refreshTokenDB);
 
 
             return Ok("Inserted successfully");
@@ -97,7 +98,7 @@ public class AuthController : ControllerBase
     {
         //check the userName whether exists
         
-        var userDB=await _userData.GetUserByNameAsync(userLogin.UserName);
+        var userDB=await _userService.GetUserByNameAsync(userLogin.UserName);
 
         if (userDB == null)
         {
@@ -159,11 +160,11 @@ public class AuthController : ControllerBase
 
         refreshTokenDB.UserId = userId;
         refreshTokenDB.RefreshToken = refreshToken;
-        refreshTokenDB.Expiry = DateTime.Now.AddDays(7);
+        refreshTokenDB.RefreshTokenExpiry = DateTime.Now.AddDays(7);
         bool result = false;
         try
         {
-            await _refreshTokenData.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
+            await _tokenService.UpdateTokenByUserIdAsync(refreshTokenDB);
             result = true;
             return result;
 

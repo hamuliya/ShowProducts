@@ -7,11 +7,11 @@ namespace WebAPI.Controllers;
 [ApiController]
 public class ProductController : ControllerBase
 {
-    private readonly IProductService _productData;
+    private readonly IProductService _productService;
 
-    public ProductController(IProductService productData)
+    public ProductController(IProductService productService)
     {
-        _productData = productData;
+        _productService = productService;
     }
   
 
@@ -20,7 +20,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            var products = await _productData.GetAllProductsAsync();
+            var products = await _productService.GetAllProductsAsync();
             return Results.Ok(products);
         }
         catch (Exception ex)
@@ -38,7 +38,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            var product = await _productData.GetProductByIdAsync(id);
+            var product = await _productService.GetProductByIdAsync(id);
             if (product == null) return Results.NotFound();
             return Results.Ok(product);
         }
@@ -54,7 +54,7 @@ public class ProductController : ControllerBase
         try
         {
 
-            int id =await  _productData.InsertProductAsync(product);
+            int id =await  _productService.InsertProductAsync(product);
             return Results.Ok(id);
         }
         catch (Exception ex)
@@ -68,7 +68,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            await _productData.UpdateProductAsync(product);
+            await _productService.UpdateProductAsync(product);
             return Results.Ok();
         }
         catch (Exception ex)
@@ -81,7 +81,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            await _productData.DeleteProductByIdAsync(id);
+            await _productService.DeleteProductByIdAsync(id);
             return Results.Ok();
         }
         catch (Exception ex)
