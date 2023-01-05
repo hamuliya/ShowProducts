@@ -28,4 +28,4 @@ public class TokenEntity
     [Required]
     public DateTime AccessTokenExpiry { get; set; }
 }
-}
+

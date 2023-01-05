@@ -9,12 +9,12 @@ namespace WebAPI.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
-    private readonly IUserService _userData;
+    private readonly IUserService _userService;
   
 
-    public UserController(IUserService userData)
+    public UserController(IUserService userService)
     {
-        _userData = userData;
+        _userService = userService;
       
     }
 
@@ -25,7 +25,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            var user= await _userData.GetUserByNameAsync(userName);
+            var user= await _userService.GetUserByNameAsync(userName);
             if (user == null) return Results.NotFound();
             return Results.Ok(user);
         }

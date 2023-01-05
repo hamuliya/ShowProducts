@@ -4,31 +4,29 @@ using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Metadata.Ecma335;
 using WebAPI.Global.Encode;
 using WebAPI.Global.Token;
-using WebAPI.Models.Auth;
+using WebAPI.Models.Token;
 
 namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RefreshTokenController : ControllerBase
+    public class TokenController : ControllerBase
     {
         private readonly IToken _token;
-        private readonly IUserService _userData;
+        private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
         private readonly IEncode _encode;
-        private readonly IRefreshTokenService _refreshTokenData;
+        private readonly ITokenService _tokenService;
 
-        public RefreshTokenController(IToken token,IUserService userData,IConfiguration configuration,IEncode encode,IRefreshTokenService refreshTokenData)
+        public TokenController(IToken token,IUserService userService,IConfiguration configuration,IEncode encode,ITokenService tokenService)
         {
             _token = token;
-            _userData = userData;
+            _userService = userService;
             _configuration = configuration;
             _encode = encode;
-            _refreshTokenData = refreshTokenData;
+            _tokenService = tokenService;
         }
 
-
-        
 
         [HttpPost]
         [Route("RefreshToken")]
@@ -52,18 +50,18 @@ namespace WebAPI.Controllers
                 
                 var username = principal.Identity.Name; //this is mapped to the Name claim by default
 
-                var userDB =await _userData.GetUserByNameAsync(username);
+                var userDB =await _userService.GetUserByNameAsync(username);
 
                 if (userDB is null) return BadRequest("Invalid client request");
 
 
-                var refreshTokenDB =await _refreshTokenData.GetRefreshTokenByUserIdAsync(userDB.UserId);
+                var refreshTokenDB =await _tokenService.GetTokenByUserIdAsync(userDB.UserId);
 
                 
 
 
 
-                if (refreshTokenDB is null || refreshTokenDB.RefreshToken != refreshToken || refreshTokenDB.Expiry <= DateTime.Now)
+                if (refreshTokenDB is null || refreshTokenDB.RefreshToken != refreshToken || refreshTokenDB.RefreshTokenExpiry <= DateTime.Now)
                     return BadRequest("Invalid client request");
 
 
@@ -75,12 +73,12 @@ namespace WebAPI.Controllers
 
                 var newRefreshToken = _token.GenerateRefreshToken();
                 refreshTokenDB.RefreshToken = newRefreshToken;
-                refreshTokenDB.Expiry = expires;
+                refreshTokenDB.RefreshTokenExpiry = expires;
                 refreshTokenDB.UserId = userDB.UserId;
 
                 // Update refresh token to database
 
-                await _refreshTokenData.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
+                await _tokenService.UpdateTokenByUserIdAsync(refreshTokenDB);
 
                 return Ok(new TokenModel()
                 {
