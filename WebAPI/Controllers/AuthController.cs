@@ -94,7 +94,7 @@ public class AuthController : ControllerBase
             refreshTokenDB.RefreshTokenExpiry = DateTime.Now.AddDays(7);
 
 
-            await _tokenService.InsertTokenAsync(refreshTokenDB);
+            await _tokenService.InsertRefreshTokenAsync(refreshTokenDB);
 
 
             return Ok("Inserted successfully");
@@ -184,7 +184,7 @@ public class AuthController : ControllerBase
         bool result = false;
         try
         {
-            await _tokenService.UpdateTokenByUserIdAsync(refreshTokenDB);
+            await _tokenService.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
            
 
         }
