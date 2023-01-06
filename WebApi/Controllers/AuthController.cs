@@ -172,10 +172,7 @@ public class AuthController : ControllerBase
 
         var refreshToken = _token.GenerateRefreshToken();
 
-        // Set the refresh token in an HttpOnly cookie when the user logs in
-
-        SetRefreshToken(refreshToken);
-
+    
 
         //Update RefreshToken in the Database
         var refreshTokenDB = new TokenEntity();
@@ -199,35 +196,42 @@ public class AuthController : ControllerBase
 
         if (result)
 
-        { return Ok(accessToken); }
+        {
+            // Set the refresh token in an HttpOnly cookie when the user logs in
+
+            SetClientToken("RefreshToken", refreshToken, 7);
+
+            SetClientToken("AccessToken", accessToken, 1);
+
+
+            return Ok(accessToken); 
+        
+        }
 
         else { return BadRequest("RefreshToken is not updated"); }
 
     }
 
 
-
-   
-
-
-
     // On the client
-
-    // Set the refresh token in an HttpOnly cookie when the user logs in
-    private void SetRefreshToken(string  refreshToken)
+    // Set the refresh token or access token in an HttpOnly cookie when the user logs in
+    private void SetClientToken(string tokenName,string token,int expiryDays)
     {
-        RefreshTokenModel newRefreshToken = new RefreshTokenModel();
-        newRefreshToken.Expiry = DateTime.Now.AddDays(7);
-        newRefreshToken.Token = refreshToken;
+        ClientTokenModel newToken = new ClientTokenModel();
+        newToken.Expiry = DateTime.Now.AddDays(expiryDays);
+        newToken.Token = token;
 
 
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Expires = newRefreshToken.Expiry
+            Expires = newToken.Expiry
         };
-        Response.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
+        Response.Cookies.Append(tokenName, newToken.Token, cookieOptions);
     }
+
+
+
 
     private static bool UserNameValidator(string userName)
     {
