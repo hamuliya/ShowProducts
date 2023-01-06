@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -16,8 +17,19 @@ namespace WebAPI.Global.Token
         {
             _configuration = configuration;
         }
-        public string GenerateAccessToken(IEnumerable<Claim> claims, string issuer, string audience, DateTime expires, byte[] encodeKey, string algorithm = SecurityAlgorithms.HmacSha256)
+        public string GenerateAccessToken(IEnumerable<Claim> claims, string issuer, string audience, DateTime expires, byte[] encodeKey, string algorithm = SecurityAlgorithms.RsaSha256)
         {
+
+            if (expires <= DateTime.UtcNow)
+            {
+                throw new ArgumentException("The 'expires' parameter must be a date/time in the future.", "expires");
+            }
+
+            if (encodeKey == null || encodeKey.Length == 0)
+            {
+                throw new ArgumentException("The 'encodeKey' parameter must be a non-empty byte array.", "encodeKey");
+            }
+
             var secretKey = new SymmetricSecurityKey(encodeKey);
             var signinCredentials = new SigningCredentials(secretKey, algorithm);
             var tokeOptions = new JwtSecurityToken(
@@ -33,6 +45,7 @@ namespace WebAPI.Global.Token
 
 
 
+
         public string GenerateRefreshToken(int numberLength = 64)
         {
             var randomNumber = new byte[numberLength];
@@ -44,12 +57,14 @@ namespace WebAPI.Global.Token
         }
 
 
-  
 
 
 
 
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string issuer, string audience, byte[] encodeKey, string token, string algorithm = SecurityAlgorithms.HmacSha256)
+
+
+
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string issuer, string audience, byte[] encodeKey, string token, string algorithm = SecurityAlgorithms.RsaSha256)
         {
 
             var jwtSection = _configuration.GetSection("Jwt");

@@ -12,6 +12,7 @@ using WebAPI.Models.Auth;
 using WebAPI.Models.Login;
 using WebAPI.Models.Token;
 
+
 namespace WebAPI.Controllers;
 
 [Route("api/[controller]")]
@@ -40,6 +41,20 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult> Register(UserRegisterModel userRegister)
     {
+
+        // Validate the username
+        if (!UserNameValidator(userRegister.UserName))
+        {
+            return BadRequest("Invalid username");
+        }
+
+        // Validate the password
+        if (!PasswordValidator(userRegister.Password))
+        {
+            return BadRequest("Invalid password");
+        }
+
+
         //Check the UserName whether exists?
 
         var user = await _userService.GetUserByNameAsync(userRegister.UserName);
@@ -96,8 +111,22 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult> Login(UserLoginModel userLogin)
     {
-        //check the userName whether exists
-        
+
+        // Validate the username
+        if (!UserNameValidator(userLogin.UserName))
+        {
+            return BadRequest("Invalid username");
+        }
+
+        // Validate the password
+        if ( !PasswordValidator(userLogin.Password))
+        {
+            return BadRequest("Invalid password");
+        }
+
+
+        //Check the userName whether exists
+
         var userDB=await _userService.GetUserByNameAsync(userLogin.UserName);
 
         if (userDB == null)
@@ -122,13 +151,55 @@ public class AuthController : ControllerBase
 
 
         //issue a JWT to the user
-        var token = CreateToken(userDB.UserName, role);
 
-        var result=await RefreshToken(userDB.UserId);
+
+        List<Claim> claims = new List<Claim>
+        {
+          new Claim(ClaimTypes.Name, userDB.UserName),
+          new Claim(ClaimTypes.Role,role),
+        };
+
+
+        var jwtSection = _configuration.GetSection("Jwt");
+
+   
+        var issuer = jwtSection.GetValue<string>("Issuer");
+        var audience = jwtSection.GetValue<string>("Audience");
+        var encodeKey =_encode.Encode(jwtSection.GetValue<string>("Key"));
+        var expires = DateTime.Now.AddDays(1);
+
+        var accessToken = _token.GenerateAccessToken(claims, issuer, audience, expires, encodeKey);
+
+        var refreshToken = _token.GenerateRefreshToken();
+
+        // Set the refresh token in an HttpOnly cookie when the user logs in
+
+        SetRefreshToken(refreshToken);
+
+
+        //Update RefreshToken in the Database
+        var refreshTokenDB = new TokenEntity();
+
+
+        refreshTokenDB.UserId = userDB.UserId;
+        refreshTokenDB.RefreshToken = refreshToken;
+        refreshTokenDB.RefreshTokenExpiry = DateTime.Now.AddDays(7);
+        bool result = false;
+        try
+        {
+            await _tokenService.UpdateTokenByUserIdAsync(refreshTokenDB);
+           
+
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
 
         if (result)
 
-        { return Ok(token); }
+        { return Ok(accessToken); }
 
         else { return BadRequest("RefreshToken is not updated"); }
 
@@ -136,57 +207,20 @@ public class AuthController : ControllerBase
 
 
 
-    private async Task<bool>  RefreshToken(int userId)
-    {
-        //Generate RefreshToken       
-        var refreshToken = _token.GenerateRefreshToken();
-
-        // On the client
-
-        // Set the refresh token in an HttpOnly cookie when the user logs in
-
-        RefreshTokenModel refreshTokenModel = new RefreshTokenModel();
-        refreshTokenModel.Expiry = DateTime.Now.AddDays(7);
-        refreshTokenModel.Token = refreshToken;
-
-       
-
-        SetRefreshToken(refreshTokenModel);
-
-
-        //Update RefreshToken in the Database
-        var refreshTokenDB = new TokenEntity();
-
-
-        refreshTokenDB.UserId = userId;
-        refreshTokenDB.RefreshToken = refreshToken;
-        refreshTokenDB.RefreshTokenExpiry = DateTime.Now.AddDays(7);
-        bool result = false;
-        try
-        {
-            await _tokenService.UpdateTokenByUserIdAsync(refreshTokenDB);
-            result = true;
-            return result;
-
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-
-            return result;
-
-        }
-       
-
-    }
+   
 
 
 
     // On the client
 
     // Set the refresh token in an HttpOnly cookie when the user logs in
-    private void SetRefreshToken(RefreshTokenModel newRefreshToken)
+    private void SetRefreshToken(string  refreshToken)
     {
+        RefreshTokenModel newRefreshToken = new RefreshTokenModel();
+        newRefreshToken.Expiry = DateTime.Now.AddDays(7);
+        newRefreshToken.Token = refreshToken;
+
+
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
@@ -195,45 +229,71 @@ public class AuthController : ControllerBase
         Response.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
     }
 
-
-
-
-   
-
-
-    //issue a JWT to the user
-    private string CreateToken(string userName,string role)
+    private static bool UserNameValidator(string userName)
     {
 
-        var issuer = _configuration.GetSection("Jwt:Issuer").Value;
-        var audience = _configuration.GetSection("Jwt:Audience").Value;
-        var key = new SymmetricSecurityKey(_encode.Encode( _configuration.GetSection("Jwt:Key").Value));
-        var expires=DateTime.Now.AddDays(1);
-
-        List<Claim> claims = new List<Claim>
+        bool result = false;
+        if (string.IsNullOrEmpty(userName) || userName.Length < 3 || userName.Length > 50)
         {
-          new Claim(ClaimTypes.Name, userName),
-          new Claim(ClaimTypes.Role,role)
-        };
-
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken
-            (
-              claims: claims,
-              expires: expires,
-              issuer: issuer,
-              audience: audience,
-              signingCredentials: creds
-
-            );
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-        return jwt;
+            return result;
+        }
+        result = true;
+        return result;
 
     }
 
- 
+        private static bool PasswordValidator(string password)
+    {
 
+        bool result = false;
+
+        //Check if the password length is between 8 and 50
+        if (string.IsNullOrEmpty(password) || password.Length < 8 ||password.Length > 50)
+            return result;
+
+        // Check if the password includes at least one capital letter
+        bool hasCapitalLetter = false;
+        foreach (char c in password)
+        {
+            if (char.IsUpper(c))
+            {
+                hasCapitalLetter = true;
+                break;
+            }
+        }
+
+
+        if (!hasCapitalLetter)
+        {
+            Console.WriteLine("Password must include at least one capital letter");
+            return result;
+        }
+
+        // Check if the password includes at least one special character
+        bool hasSpecialCharacter = false;
+        foreach (char c in password)
+        {
+            if (!char.IsLetterOrDigit(c))
+            {
+                hasSpecialCharacter = true;
+                break;
+            }
+        }
+
+        if (!hasSpecialCharacter)
+        {
+            Console.WriteLine("Password must include at least one special character");
+            return result;
+        }
+
+
+       
+        result=true;
+       
+
+        return result;
+
+    }
 
 }
   
