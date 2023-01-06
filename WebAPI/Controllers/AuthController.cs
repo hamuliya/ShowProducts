@@ -185,6 +185,7 @@ public class AuthController : ControllerBase
         try
         {
             await _tokenService.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
+            result = true;
            
 
         }
