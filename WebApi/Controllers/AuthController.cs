@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
+
 using WebAPI.Global.Encode;
 using WebAPI.Global.Hashing;
 using WebAPI.Global.Token;
@@ -213,9 +213,96 @@ public class AuthController : ControllerBase
     }
 
 
+
+    [HttpPost]
+    [Route("RefreshToken")]
+    public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
+    {
+        try
+        {
+           
+
+            string? accessToken = tokenModel.AccessToken;
+            string? refreshToken = tokenModel.RefreshToken;
+
+            // Validate the access token
+            if (string.IsNullOrEmpty(accessToken) || accessToken.Length < 50)
+            {
+                return BadRequest("Invalid access token");
+            }
+
+            // Validate the refresh token
+            if (string.IsNullOrEmpty(refreshToken) || refreshToken.Length < 50)
+            {
+                return BadRequest("Invalid refresh token");
+            }
+
+
+
+            var encodeKey = _encode.Encode(_configuration.GetSection("Jwt:Key").Value);
+
+
+            var principal = _token.GetPrincipalFromExpiredToken(tokenModel.Issuer, tokenModel.Audience, encodeKey, accessToken);
+
+
+            var username = principal.Identity.Name; //this is mapped to the Name claim by default
+
+            var userDB = await _userService.GetUserByNameAsync(username);
+
+            if (userDB is null) return BadRequest("Invalid client request");
+
+
+            var refreshTokenDB = await _tokenService.GetRefreshTokenByUserIdAsync(userDB.UserId);
+
+
+            if (refreshTokenDB is null || refreshTokenDB.RefreshToken != refreshToken || refreshTokenDB.RefreshTokenExpiry <= DateTime.Now)
+                return BadRequest("Invalid client request");
+
+
+            string? issuer = _configuration.GetSection("Jwt:Issuer").Value;
+            string? audience = _configuration.GetSection("Jwt:Audience").Value;
+            var expires = DateTime.Now.AddDays(7);
+
+            var newAccessToken = _token.GenerateAccessToken(principal.Claims, issuer, audience, expires, encodeKey);
+
+            var newRefreshToken = _token.GenerateRefreshToken();
+            refreshTokenDB.RefreshToken = newRefreshToken;
+            refreshTokenDB.RefreshTokenExpiry = expires;
+            refreshTokenDB.UserId = userDB.UserId;
+
+            // Update refresh token to database
+
+            await _tokenService.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
+
+            // Set the refresh token in an HttpOnly cookie when the user logs in
+
+            SetClientToken("RefreshToken", newRefreshToken, 7);
+
+            SetClientToken("AccessToken", newAccessToken, 1);
+
+
+            return Ok(new TokenModel()
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+            });
+        }
+        catch (Exception ex)
+        {
+
+            return BadRequest(ex.Message);
+        }
+
+
+
+    }
+
+
+   
+
     // On the client
     // Set the refresh token or access token in an HttpOnly cookie when the user logs in
-    private void SetClientToken(string tokenName,string token,int expiryDays)
+    private void SetClientToken(string tokenName, string token, int expiryDays)
     {
         ClientTokenModel newToken = new ClientTokenModel();
         newToken.Expiry = DateTime.Now.AddDays(expiryDays);
@@ -229,6 +316,8 @@ public class AuthController : ControllerBase
         };
         Response.Cookies.Append(tokenName, newToken.Token, cookieOptions);
     }
+
+
 
 
 
@@ -299,5 +388,12 @@ public class AuthController : ControllerBase
 
     }
 
+
+   
+
+
+
+
+
 }
-  
+

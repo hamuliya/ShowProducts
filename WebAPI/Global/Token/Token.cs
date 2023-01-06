@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -6,6 +7,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using WebAPI.Global.Encode;
+using WebAPI.Models.Token;
 
 namespace WebAPI.Global.Token
 {
@@ -59,11 +61,6 @@ namespace WebAPI.Global.Token
 
 
 
-
-
-
-
-
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string issuer, string audience, byte[] encodeKey, string token, string algorithm = SecurityAlgorithms.RsaSha256)
         {
 
@@ -91,6 +88,10 @@ namespace WebAPI.Global.Token
                 throw new SecurityTokenException("Invalid token");
             return claimsprincipal;
         }
+
+
+
+
     }
 }
 
