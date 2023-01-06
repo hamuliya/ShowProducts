@@ -20,18 +20,18 @@ public class TokenService : ITokenService
 
     public async Task InsertRefreshTokenAsync(TokenEntity token)
     {
-        await _db.ExecDataAsync("dbo.spToken_Insert", new { token.UserId, token.RefreshToken, token.RefreshTokenExpiry });
+        await _db.ExecDataAsync("dbo.spRefreshToken_Insert", new { token.UserId, token.RefreshToken, token.RefreshTokenExpiry });
     }
 
 
     public async Task UpdateRefreshTokenByUserIdAsync(TokenEntity token)
     {
-        await _db.ExecDataAsync("dbo.spToken_UpdateByUserId", new { token.UserId, token.RefreshToken, token.RefreshTokenExpiry });
+        await _db.ExecDataAsync("dbo.spRefreshToken_UpdateByUserId", new { token.UserId, token.RefreshToken, token.RefreshTokenExpiry });
     }
 
     public async Task<TokenEntity> GetRefreshTokenByUserIdAsync(int userId)
     {
-        IEnumerable<TokenEntity> result = await _db.LoadDataAsync<TokenEntity, dynamic>("dbo.spToken_GetByUserId", new { UserId = userId });
+        IEnumerable<TokenEntity> result = await _db.LoadDataAsync<TokenEntity, dynamic>("dbo.spRefreshToken_GetByUserId", new { UserId = userId });
         if (result is null) return null;
         return result.FirstOrDefault();
     }
