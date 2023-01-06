@@ -55,7 +55,7 @@ namespace WebAPI.Controllers
                 if (userDB is null) return BadRequest("Invalid client request");
 
 
-                var refreshTokenDB =await _tokenService.GetTokenByUserIdAsync(userDB.UserId);
+                var refreshTokenDB =await _tokenService.GetRefreshTokenByUserIdAsync(userDB.UserId);
 
                 
 
@@ -78,7 +78,7 @@ namespace WebAPI.Controllers
 
                 // Update refresh token to database
 
-                await _tokenService.UpdateTokenByUserIdAsync(refreshTokenDB);
+                await _tokenService.UpdateRefreshTokenByUserIdAsync(refreshTokenDB);
 
                 return Ok(new TokenModel()
                 {
