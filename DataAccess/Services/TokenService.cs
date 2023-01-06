@@ -18,18 +18,18 @@ public class TokenService : ITokenService
     }
 
 
-    public async Task InsertTokenAsync(TokenEntity token)
+    public async Task InsertRefreshTokenAsync(TokenEntity token)
     {
-        await _db.ExecDataAsync("dbo.spToken_Insert", new { token.UserId, token.RefreshToken, token.RefreshTokenExpiry, token.AccessToken, token.AccessTokenExpiry });
+        await _db.ExecDataAsync("dbo.spToken_Insert", new { token.UserId, token.RefreshToken, token.RefreshTokenExpiry });
     }
 
 
-    public async Task UpdateTokenByUserIdAsync(TokenEntity token)
+    public async Task UpdateRefreshTokenByUserIdAsync(TokenEntity token)
     {
-        await _db.ExecDataAsync("dbo.spToken_UpdateByUserId", new { token.UserId, token.RefreshToken, token.RefreshTokenExpiry, token.AccessToken, token.AccessTokenExpiry });
+        await _db.ExecDataAsync("dbo.spToken_UpdateByUserId", new { token.UserId, token.RefreshToken, token.RefreshTokenExpiry });
     }
 
-    public async Task<TokenEntity> GetTokenByUserIdAsync(int userId)
+    public async Task<TokenEntity> GetRefreshTokenByUserIdAsync(int userId)
     {
         IEnumerable<TokenEntity> result = await _db.LoadDataAsync<TokenEntity, dynamic>("dbo.spToken_GetByUserId", new { UserId = userId });
         if (result is null) return null;
