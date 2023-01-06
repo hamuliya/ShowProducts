@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[spToken_GetByUserId]
+﻿CREATE PROCEDURE [dbo].[spRefreshToken_GetByUserId]
 	@UserId int
 	
 AS

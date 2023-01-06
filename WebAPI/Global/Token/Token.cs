@@ -9,6 +9,7 @@ using System.Text;
 using WebAPI.Global.Encode;
 using WebAPI.Models.Token;
 
+
 namespace WebAPI.Global.Token
 {
     public class Token : IToken
@@ -19,7 +20,7 @@ namespace WebAPI.Global.Token
         {
             _configuration = configuration;
         }
-        public string GenerateAccessToken(IEnumerable<Claim> claims, string issuer, string audience, DateTime expires, byte[] encodeKey, string algorithm = SecurityAlgorithms.RsaSha256)
+        public string GenerateAccessToken(IEnumerable<Claim> claims, string issuer, string audience, DateTime expires, byte[] encodeKey, string algorithm = SecurityAlgorithms.HmacSha256)
         {
 
             if (expires <= DateTime.UtcNow)
@@ -61,7 +62,7 @@ namespace WebAPI.Global.Token
 
 
 
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string issuer, string audience, byte[] encodeKey, string token, string algorithm = SecurityAlgorithms.RsaSha256)
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string issuer, string audience, byte[] encodeKey, string token, string algorithm = SecurityAlgorithms.HmacSha256)
         {
 
             var jwtSection = _configuration.GetSection("Jwt");

@@ -6,6 +6,6 @@
 AS
 begin
     set nocount on;
-	Insert into dbo.reRefreshToken(UserId,RefreshToken,RefreshTokenExpiry) 
+	Insert into dbo.RefreshToken(UserId,RefreshToken,RefreshTokenExpiry) 
 	values(@UserId,@RefreshToken,@RefreshTokenExpiry);
 end

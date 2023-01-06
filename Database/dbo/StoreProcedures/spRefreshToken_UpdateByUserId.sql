@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[spToken_UpdateByUserId]
+﻿CREATE PROCEDURE [dbo].[spRefreshToken_UpdateByUserId]
 	@UserId int,
 	@RefreshToken NVARCHAR(1000),
 	@RefreshTokenExpiry Date
