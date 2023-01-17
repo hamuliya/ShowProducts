@@ -1,8 +1,6 @@
 using DataAccess.DbAccess;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
@@ -17,9 +15,7 @@ var loggerFactory = LoggerFactory.Create(builder =>
 {
     builder
         .AddConsole()
-        .AddFilter(level => level >= LogLevel.Information)
-        .AddEventSourceLogger(); // adds an event source logger
-  
+        .AddFilter(level => level >= LogLevel.Information);
 });
 
 var builder = WebApplication.CreateBuilder(args);

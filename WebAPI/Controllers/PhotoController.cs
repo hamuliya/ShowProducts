@@ -1,13 +1,7 @@
 ﻿
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing.Constraints;
-using System.Linq;
-using System.Net;
-using System.Runtime.Intrinsics.X86;
-
 using WebAPI.Models;
-using static System.Net.Mime.MediaTypeNames;
+
 
 
 namespace WebAPI.Controllers;
@@ -31,69 +25,60 @@ public class PhotoController : ControllerBase
 
     private string[] permittedExtensions = { ".jpg", ".jpeg" };
 
-    private bool CheckFileValidity(string uploadedFileName)
+
+    private bool IsValidFile(string fileName)
     {
-        bool result = true;
-        var ext = Path.GetExtension(uploadedFileName).ToLowerInvariant();
-
-        if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
-        {
-            result = false;
-        }
-        return result;
-
+        var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
+        return !string.IsNullOrEmpty(extension) && permittedExtensions.Contains(extension);
     }
 
-    [HttpPost("UploadPhoto")]
-    public async Task<IResult> UploadPhoto([FromForm] PhotoAPIModel objFile)
-    {
 
-        PhotoAPIModel obj = new();
+
+    [HttpPost("UploadPhoto")]
+    public async Task<IActionResult> UploadPhoto([FromForm] PhotoAPIModel model)
+    {
         try
         {
-            obj.PhotoID = objFile.PhotoID;
-            string? fileName =objFile?.Photo?.FileName;
-            bool validFile = false;
-
-            
-            if (fileName is not null)
-            {        
-                int FileNameLength = fileName.Length;
-                validFile= CheckFileValidity(fileName);
-               
-            }
-
-            if (objFile?.Photo?.Length > 0 && validFile)
+            // check if a file has been received
+            if (model?.Photo == null || model.Photo.Length == 0)
             {
-
-                //string DirPath= $"{_environment?.WebRootPath}\\Upload\\{obj.PhotoID}\\";
-                string dirPath = $"{_environment?.ContentRootPath}\\Photos\\{obj.PhotoID}\\";
-
-
-               // string ext = Path.GetExtension(fileName).ToLowerInvariant();
-                string filePath = Path.Combine(dirPath,Path.GetRandomFileName());
-                
-
-
-                if (!Directory.Exists(dirPath ))
-                {
-                    Directory.CreateDirectory(dirPath);
-                }
-
-                await using (var filestream = new FileStream(filePath, FileMode.Create))
-                {
-                    await objFile.Photo.CopyToAsync(filestream);
-                    filestream.Flush();
-           
-                }
+                return BadRequest("No file received.");
             }
+
+            // check if the file is valid
+            string fileName = model.Photo.FileName;
+            if (!IsValidFile(fileName))
+            {
+                return BadRequest("Invalid file type.");
+            }
+
+            // create the directory if it doesn't exist
+            string directoryPath = Path.Combine(_environment.ContentRootPath, "Photos", model.PhotoID.ToString());
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            // generate a unique file name
+            string filePath = Path.Combine(directoryPath, Path.GetRandomFileName());
+
+            // save the file to the directory
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await model.Photo.CopyToAsync(stream);
+            }
+
+            return Ok();
         }
         catch (Exception ex)
         {
-            return Results.Problem( ex.Message);
+            // return a 500 status code with the exception message
+            return StatusCode(500, ex.Message);
         }
-        return Results.Ok();
     }
+
+
+
 
 
     [HttpDelete("photos/{id}/{photoName}")]
@@ -101,8 +86,8 @@ public class PhotoController : ControllerBase
     {
         // Build the file path using the environment's ContentRootPath and the provided id and photoName
 
-        string filePath = Path.Combine(_environment?.ContentRootPath ?? "", "Photos", id.ToString(), $"{photoName}.jpg");
-        
+        string filePath = Path.Combine(_environment.ContentRootPath, "Photos", id.ToString(), $"{photoName}.jpg");
+
 
         try
         {
@@ -115,7 +100,7 @@ public class PhotoController : ControllerBase
             }
             else
             {
-                _logger.LogError( "Error from PhotoController=>DeletePhoto");
+                _logger.LogError("404,Error from PhotoController=>DeletePhoto");
                 // Return a 404 Not Found if the file does not exist
                 return NotFound();
             }
@@ -123,30 +108,30 @@ public class PhotoController : ControllerBase
         catch (Exception ex)
         {
             // Return a 500 Internal Server Error if there is an exception
-            _logger.LogError(ex, "Error from PhotoController=>DeletePhoto");
+            _logger.LogError(ex, "500,Error from PhotoController=>DeletePhoto");
             return StatusCode(500, ex.Message);
         }
     }
 
 
     [HttpGet("UpdateFolder/{id}")]
-    public async Task<IResult> UpdateFolder(int id)
+    public async Task<IActionResult> UpdateFolder(int id)
     {
         try
         {
             // Validate the input
             if (id <= 0)
-                return Results.Problem("Invalid folder id");
+                return BadRequest("Invalid folder id");
 
             // Construct the directory path
-            var dirPath = Path.Combine(_environment?.ContentRootPath ?? "", "Photos", "0");
-            var newDirPath = Path.Combine(_environment?.ContentRootPath ?? "", "Photos", id.ToString());
+            var dirPath = Path.Combine(_environment.ContentRootPath, "Photos", "0");
+            var newDirPath = Path.Combine(_environment.ContentRootPath, "Photos", id.ToString());
 
             if (!System.IO.Directory.Exists(dirPath))
-                return Results.Problem($"Source folder {dirPath} does not exist");
+                return NotFound($"Source folder {dirPath} does not exist");
 
             if (System.IO.Directory.Exists(newDirPath))
-                return Results.Problem($"Target folder {newDirPath} already exists");
+                return Conflict($"Target folder {newDirPath} already exists");
 
             // Move the folder
             await Task.Run(() => System.IO.Directory.Move(dirPath, newDirPath));
@@ -154,63 +139,69 @@ public class PhotoController : ControllerBase
         catch (Exception ex)
         {
             // Log the error
-            _logger.LogError (ex,"Error from PhotoController=>UpdateFolder");
-            return Results.Problem(ex.Message);
+            _logger.LogError(ex, "Error from PhotoController=>UpdateFolder");
+            return StatusCode(500, ex.Message);
         }
 
-        return Results.Ok();
+        return Ok();
     }
-
-
 
 
     [HttpGet("GetPhotos/{id}")]
-
-    public Task<IResult> GetPhotos(int id)
+    public async Task<IActionResult> GetPhotos(int id)
     {
+        // Check if the folder with the given ID exists
+        string dirPath = Path.Combine(_environment.ContentRootPath, "Photos", id.ToString());
+        if (!Directory.Exists(dirPath))
+            return NotFound("Folder with ID " + id + " does not exist.");
 
         try
         {
-            string dirPath = $"{_environment?.ContentRootPath}\\Photos\\{id}\\";
-            List<string> photos = new();
-            DirectoryInfo dirInfo = new DirectoryInfo(dirPath);
-            foreach (FileInfo file in dirInfo.GetFiles())
-            {
-                string fileName = file.Name;
-              
-                photos.Add(fileName);
-            }
-            return Task.FromResult(Results.Ok(photos));
+            // Get all the files in the folder
+            var files = Directory.GetFiles(dirPath);
 
+            // Extract the file names from the full path
+            var fileNames = files.Select(Path.GetFileName);
+
+            return Ok(fileNames);
         }
         catch (Exception ex)
         {
-            return Task.FromResult(Results.Problem(ex.Message));
+            // Log the exception and return a 500 Internal Server Error
+            Console.WriteLine(ex);
+            return StatusCode(500, "An error occurred while getting photos.");
         }
-
-        }
-
-
-    [HttpGet("GetPhoto/{id}/{PhotoName}")]
-    public ActionResult GetPhoto(int id,string  PhotoName)
-    {
-        try
-        {
-            string filePath = $"{_environment?.ContentRootPath}\\Photos\\{id}\\{PhotoName}";
-
-            if (filePath != null)
-            {
-               
-                var image = System.IO.File.OpenRead(filePath);
-                return  File(image, "image/jpeg");
-            }
-        }
-        catch
-        {
-            throw;
-        }
-        return NotFound();
     }
 
-}
 
+
+
+    [HttpGet("GetPhoto/{id}/{photoName}")]
+    public IActionResult GetPhoto(int id, string photoName)
+    {
+        // Check if the file with the given ID and photoName exists
+        string filePath = Path.Combine(_environment.ContentRootPath, "Photos", id.ToString(), photoName);
+        if (!System.IO.File.Exists(filePath))
+            return NotFound("The photo with name " + photoName + " and ID " + id + " does not exist.");
+
+        try
+        {
+            // Open the image file
+            var image = System.IO.File.OpenRead(filePath);
+
+            // Get the file extension
+            var fileExtension = Path.GetExtension(photoName).TrimStart('.');
+
+            // Set the content type based on the file extension
+            var contentType = "image/" + fileExtension;
+
+            return File(image, contentType);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception and return a 500 Internal Server Error
+            Console.WriteLine(ex);
+            return StatusCode(500, "An error occurred while getting the photo.");
+        }
+    }
+}
