@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import classes from "./Navbar.module.css";
 
+
 function Navbar() {
   return (
     <nav className={classes.navbar}>
@@ -17,7 +18,9 @@ function Navbar() {
           </Link>
         </li>
       </ul>
-      <button className={classes.btn}>SIGN UP</button>
+      <Link to="/signIn" className={classes.btnlink}>
+       <button className={classes.btn}>SIGN IN</button> 
+       </Link>
     </nav>
   );
 }

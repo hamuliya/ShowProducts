@@ -1,6 +1,6 @@
 import React, { useRef, useState,useEffect } from "react";
 import Card from "../../ui/Card";
-import classes from "./UploadProductsForm.module.css";
+import classes from "../../Form.module.css";
 import { InsertProduct } from "../../../services/FetchProducts";
 import { UploadPhoto } from "../../../services/FetchPhotos";
 

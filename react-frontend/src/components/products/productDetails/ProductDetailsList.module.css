@@ -66,7 +66,8 @@
 
 .largeImage img {
   overflow: hidden;
-  width: 95%;
+  width: 40rem;
+  height: 30rem;
 }
 
 .zoomIn {

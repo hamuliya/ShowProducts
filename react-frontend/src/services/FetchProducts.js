@@ -1,25 +1,50 @@
 import axios from "axios";
+import 'abortcontroller-polyfill/dist/polyfill-patch-fetch';
 
 
 
 
 export async function GetProducts() {
+  setLoading(true);
   const response =await axios.get("/Product");
   return  response;  
 }
 
-export async function GetProduct(id) {
-  await axios
-    .get(`/Product/${id}`)
-    .then((res) => {
-      const Products = res.data;
-      console.log(res.data);
-      return Products;
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+
+
+
+
+export async function GetProduct(id, setLoading) {
+  setLoading(true);
+  const controller = new AbortController();
+  const signal = controller.signal;
+  let product = null;
+  let error = null;
+  try {
+    const response = await axios.get(`/Product/${id}`, { timeout: 10000 ,signal });
+    if (response.status === 200) {
+        product = response.data;
+    } else {
+        error = {
+            message: 'There was an error processing your request',
+            status: response.status,
+        }
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      // request was cancelled
+    } else {
+      error = {
+        message: e.message,
+        status: e.response?.status || 500
+      }
+    }
+  }
+  setLoading(false);
+  return {product, error}
 }
+
+
 
 
 
@@ -67,3 +92,18 @@ export async function InsertProduct(title, uploadDate, detail) {
   return response.data.value;
 }
 
+
+//const api = axios.create({
+//    baseURL: 'http://localhost:5000/api',
+//    headers: {
+//        'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+//    }
+//});
+
+//api.get('/protected-route')
+//    .then(response => {
+//        // do something with the response
+//    })
+//    .catch(error => {
+//        // handle the error
+//    });

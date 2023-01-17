@@ -8,9 +8,10 @@ function ProductList(props) {
     <>
       <div className={classes.itemlist}>
         {props.products.map((product) => (
+          
           <ProductItem
-            key={product.id}
-            id={product.id}
+            key={product.productId}
+            id={product.productId}
             title={product.title}
             date={product.uploadDate}
             description={product.detail}

@@ -4,11 +4,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing.Constraints;
 using System.Linq;
 using System.Net;
+using System.Runtime.Intrinsics.X86;
+
 using WebAPI.Models;
 using static System.Net.Mime.MediaTypeNames;
 
 
 namespace WebAPI.Controllers;
+
+
+
 
 [Route("[controller]")]
 [ApiController]
@@ -16,9 +21,12 @@ namespace WebAPI.Controllers;
 public class PhotoController : ControllerBase
 {
     private readonly IWebHostEnvironment? _environment;
-    public PhotoController(IWebHostEnvironment? environment)
+    private readonly ILogger<PhotoController> _logger;
+
+    public PhotoController(IWebHostEnvironment? environment, ILogger<PhotoController> logger)
     {
         _environment = environment;
+        _logger = logger;
     }
 
     private string[] permittedExtensions = { ".jpg", ".jpeg" };
@@ -88,48 +96,71 @@ public class PhotoController : ControllerBase
     }
 
 
-
-    [HttpGet("DeletePhoto/{id}/{PhotoName}")]
-    public Task<IResult> DeletePhoto(int id, string PhotoName)
+    [HttpDelete("photos/{id}/{photoName}")]
+    public async Task<IActionResult> DeletePhoto(int id, string photoName)
     {
-        
-        string dirPath = $"{_environment?.ContentRootPath}\\Photos\\{id}\\";
+        // Build the file path using the environment's ContentRootPath and the provided id and photoName
 
-        string photopath = dirPath + $"\\{PhotoName}"+".jpg";
+        string filePath = Path.Combine(_environment?.ContentRootPath ?? "", "Photos", id.ToString(), $"{photoName}.jpg");
+        
+
         try
         {
-            if (System.IO.File.Exists(photopath))
+            // Check if the file exists
+            if (System.IO.File.Exists(filePath))
             {
-                System.IO.File.Delete(photopath);
+                // Delete the file
+                System.IO.File.Delete(filePath);
+                return Ok();
+            }
+            else
+            {
+                _logger.LogError( "Error from PhotoController=>DeletePhoto");
+                // Return a 404 Not Found if the file does not exist
+                return NotFound();
             }
         }
         catch (Exception ex)
         {
-            return Task.FromResult(Results.Problem(ex.Message));
+            // Return a 500 Internal Server Error if there is an exception
+            _logger.LogError(ex, "Error from PhotoController=>DeletePhoto");
+            return StatusCode(500, ex.Message);
         }
-
-        return Task.FromResult(Results.Ok());
     }
+
 
     [HttpGet("UpdateFolder/{id}")]
-    public Task<IResult> UpdateFolder(int id)
+    public async Task<IResult> UpdateFolder(int id)
     {
-
-        string dirPath = $"{_environment?.ContentRootPath}\\Photos\\0\\";
         try
         {
-            if (System.IO.Directory.Exists(dirPath))
-            {
-                System.IO.Directory.Move("0",id.ToString());
-            }
+            // Validate the input
+            if (id <= 0)
+                return Results.Problem("Invalid folder id");
+
+            // Construct the directory path
+            var dirPath = Path.Combine(_environment?.ContentRootPath ?? "", "Photos", "0");
+            var newDirPath = Path.Combine(_environment?.ContentRootPath ?? "", "Photos", id.ToString());
+
+            if (!System.IO.Directory.Exists(dirPath))
+                return Results.Problem($"Source folder {dirPath} does not exist");
+
+            if (System.IO.Directory.Exists(newDirPath))
+                return Results.Problem($"Target folder {newDirPath} already exists");
+
+            // Move the folder
+            await Task.Run(() => System.IO.Directory.Move(dirPath, newDirPath));
         }
         catch (Exception ex)
         {
-            return Task.FromResult(Results.Problem(ex.Message));
+            // Log the error
+            _logger.LogError (ex,"Error from PhotoController=>UpdateFolder");
+            return Results.Problem(ex.Message);
         }
 
-        return Task.FromResult(Results.Ok());
+        return Results.Ok();
     }
+
 
 
 

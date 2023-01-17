@@ -11,31 +11,39 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 
 function ProductItem(props) {
   const [image, setImage] = useState("");
-  const [photos, setPhotos] = useState([]);
+  const [photos, setPhotos] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    getAllPhotos(props.id);
+    return () => {}
+  }, [props.id]);
 
-  useEffect(() => getAllPhotos(props.id), []);
-
-  function getAllPhotos(productId) {
-    const response = GetPhotos(productId);
-    response.then((value) => {
-      if (value.length !== undefined) {
-        setPhotos(value);
-        getFirstPhoto(productId, value[0]);
-      }
-    });
-  }
-
-  function getFirstPhoto(productId, firstPhotoName) {
-    const response = GetPhoto(productId, firstPhotoName);
-    response.then((value) => {
-      setImage(value);
-    });
+  async function getAllPhotos(productId) {
+    const {data,error} = await GetPhotos(productId,setLoading);
+    if (error) {setError(error);}
+    else{
+      setPhotos(data);
+      getFirstPhoto(productId, data[0]);
+    }
   }
 
 
+  async function getFirstPhoto(productId, firstPhotoName) {
+    setLoading(false);
+    const {data,error} =await GetPhoto(productId, firstPhotoName,setLoading);
+    if (error) {setError(error);}
+    else{
+      setImage(data);
+    } 
+  }
 
   return (
+    <>
+    {loading && <div>Loading...</div>}
+    {error && <div>{error.message}</div>}
+    {photos &&
     <div className={classes.item} id={props.id}>
       <Card>
         <div className={classes.image}>
@@ -79,8 +87,10 @@ function ProductItem(props) {
           <div>{UppcaseFirstLetter(props.title)}</div>
         </div>
       </Card>
-    </div>
+    </div>}
+    </>
   );
+ 
 }
 
 export default ProductItem;

@@ -4,7 +4,7 @@
   --button-color:rgba(141, 8, 8, 0.418);
   --font-color: rgb(248, 245, 245);
   --font-color-hover:rgba(141, 8, 8, 0.418);
-  --font-size:2vw;
+  --font-size:1.8vw;
   --btn-font-size:0.8vw;
   --margin:3em;
 }
@@ -40,15 +40,20 @@
   color: var(--font-color-hover);
   }
 
-.btn{
+.btnlink{
   grid-area: button;
-  width:8em;
-  height: 3em;
+ 
+}
+
+.btn{
+  width:6em;
+  height: 2em;
   padding: 0.2em;
   align-self: center;
   font-size: var(--btn-font-size);
   cursor: pointer;
   justify-self: center;
+  margin: 3em;
 }
 
 .btn:hover

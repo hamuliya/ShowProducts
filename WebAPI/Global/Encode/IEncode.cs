@@ -2,6 +2,6 @@
 {
     public interface IEncode
     {
-        byte[] Encode(string value);
+        byte[] Encode(string value = "I love coding");
     }
 }
