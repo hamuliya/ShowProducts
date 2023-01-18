@@ -55,7 +55,7 @@ public class ProductController : ControllerBase
 
 
     [HttpPost]
-    public async Task<IResult> InsertProduct(ProductEntity product)
+    public async Task<IActionResult> InsertProduct(ProductEntity product)
     {
         try
         {
@@ -70,7 +70,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IResult> UpdateProduct(ProductEntity product)
+    public async Task<IActionResult> UpdateProduct(ProductEntity product)
     {
         try
         {
@@ -82,17 +82,20 @@ public class ProductController : ControllerBase
             return Results.Problem(ex.Message);
         }
     }
+
+
     [HttpDelete]
-    public async Task<IResult> DeleteProduct(int id)
+    public async Task<IActionResult> DeleteProduct(int id)
     {
         try
         {
             await _productService.DeleteProductByIdAsync(id);
-            return Results.Ok();
+            return Ok();
         }
         catch (Exception ex)
         {
-            return Results.Problem(ex.Message);
+            _logger.LogError(ex, "An error occurred while delete product");
+            return StatusCode(500,ex.Message);
             throw;
         }
 
