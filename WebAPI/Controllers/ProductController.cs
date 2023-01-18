@@ -8,24 +8,27 @@ namespace WebAPI.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly ILogger<ProductController> _logger;
 
-    public ProductController(IProductService productService)
+    public ProductController(IProductService productService,ILogger<ProductController> logger)
     {
         _productService = productService;
+        _logger = logger;
     }
   
 
     [HttpGet]
-    public async Task<IResult> GetProducts()
+    public async Task<IActionResult> GetProducts()
     {
         try
         {
             var products = await _productService.GetAllProductsAsync();
-            return Results.Ok(products);
+            return Ok(products);
         }
         catch (Exception ex)
         {
-            return (Results.Problem(ex.Message));
+            _logger.LogError(ex, "An error occurred while getting all products.");
+            return (StatusCode(500,ex.Message));
         }
     }
 
@@ -34,19 +37,22 @@ public class ProductController : ControllerBase
 
 
     [HttpGet("{id}", Name = "ProductById")]
-    public async Task<IResult> GetProduct(int id)
+    public async Task<IActionResult> GetProduct(int id)
     {
         try
         {
             var product = await _productService.GetProductByIdAsync(id);
             if (product == null) return Results.NotFound();
-            return Results.Ok(product);
+            return Ok(product);
         }
         catch (Exception ex)
         {
-            return (Results.Problem(ex.Message));
+            _logger.LogError(ex, "An error occurred while getting Product");
+            return (StatusCode(500,ex.Message));
         }
     }
+
+
 
     [HttpPost]
     public async Task<IResult> InsertProduct(ProductEntity product)

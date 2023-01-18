@@ -100,7 +100,7 @@ public class PhotoController : ControllerBase
             }
             else
             {
-                _logger.LogError("404,Error from PhotoController=>DeletePhoto");
+                _logger.LogError("404,An error occurred while delete photo");
                 // Return a 404 Not Found if the file does not exist
                 return NotFound();
             }
@@ -108,7 +108,7 @@ public class PhotoController : ControllerBase
         catch (Exception ex)
         {
             // Return a 500 Internal Server Error if there is an exception
-            _logger.LogError(ex, "500,Error from PhotoController=>DeletePhoto");
+            _logger.LogError(ex, "500,An error occurred while delete photo.");
             return StatusCode(500, ex.Message);
         }
     }
@@ -139,7 +139,7 @@ public class PhotoController : ControllerBase
         catch (Exception ex)
         {
             // Log the error
-            _logger.LogError(ex, "Error from PhotoController=>UpdateFolder");
+            _logger.LogError(ex, "An error occurred while update foler name.");
             return StatusCode(500, ex.Message);
         }
 
@@ -200,7 +200,8 @@ public class PhotoController : ControllerBase
         catch (Exception ex)
         {
             // Log the exception and return a 500 Internal Server Error
-            Console.WriteLine(ex);
+            
+            _logger.LogError(ex, "An error occurred while getting the photo.");
             return StatusCode(500, "An error occurred while getting the photo.");
         }
     }
