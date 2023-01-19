@@ -1,3 +1,3 @@
-﻿global using DataAccess.Data;
-global using DataAccess.Models;
+﻿global using DataAccess.Entities;
+global using DataAccess.Services;
 

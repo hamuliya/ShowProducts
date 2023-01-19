@@ -1,6 +1,6 @@
-﻿using DataAccess.Models;
+﻿using DataAccess.Entities;
 
-namespace DataAccess.Data
+namespace DataAccess.Services
 {
     public interface IUserService
     {

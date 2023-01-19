@@ -8,6 +8,11 @@
   
 }
 
+.loading {
+  font-size: large;
+}
+
+
 @media (min-width: 30em) {
   .itemlist {
     grid-template-columns: repeat(2, 1fr);

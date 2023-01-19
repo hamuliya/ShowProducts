@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 
 function Home() { 
   const [products,setProducts]=useState([]);
+  const [loading,setLoading]=useState(false);
   useEffect(() => {
-    const response = GetProducts();
+    const response = GetProducts(setLoading);
      response.then((value)=>{
-       setProducts(value.data.value);
+       setProducts(value.data);
      })
   }, []);
   return (

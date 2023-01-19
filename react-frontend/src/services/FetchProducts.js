@@ -4,9 +4,10 @@ import 'abortcontroller-polyfill/dist/polyfill-patch-fetch';
 
 
 
-export async function GetProducts() {
+export async function GetProducts(setLoading) {
   setLoading(true);
   const response =await axios.get("/Product");
+  setLoading(false);
   return  response;  
 }
 
@@ -89,7 +90,7 @@ export async function InsertProduct(title, uploadDate, detail) {
   });
 
 
-  return response.data.value;
+  return response.data;
 }
 
 

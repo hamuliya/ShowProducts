@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Global\ExceptionFilter\" />
+    <Folder Include="Photos\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

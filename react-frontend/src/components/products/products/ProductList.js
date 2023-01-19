@@ -7,7 +7,7 @@ function ProductList(props) {
   return (
     <>
       <div className={classes.itemlist}>
-        {props.products.map((product) => (
+        { props.products ? props.products.map((product) => (
           
           <ProductItem
             key={product.productId}
@@ -16,7 +16,7 @@ function ProductList(props) {
             date={product.uploadDate}
             description={product.detail}
           />
-        ))}
+        )):<p className={classes.loading}>Loading...</p>}
       </div>
     </>
   );

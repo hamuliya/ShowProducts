@@ -155,8 +155,8 @@ public class PhotoController : ControllerBase
         if (!Directory.Exists(dirPath))
             return NotFound("Folder with ID " + id + " does not exist.");
 
-        try
-        {
+        //try
+        //{
             // Get all the files in the folder
             var files = Directory.GetFiles(dirPath);
 
@@ -164,13 +164,13 @@ public class PhotoController : ControllerBase
             var fileNames = files.Select(Path.GetFileName);
 
             return Ok(fileNames);
-        }
-        catch (Exception ex)
-        {
-            // Log the exception and return a 500 Internal Server Error
-            Console.WriteLine(ex);
-            return StatusCode(500, "An error occurred while getting photos.");
-        }
+        //}
+        //catch (Exception ex)
+        //{
+        //    // Log the exception and return a 500 Internal Server Error
+        //    Console.WriteLine(ex);
+        //    return StatusCode(500, "An error occurred while getting photos.");
+        //}
     }
 
 

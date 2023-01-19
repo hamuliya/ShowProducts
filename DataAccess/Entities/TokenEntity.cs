@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccess.Models;
+namespace DataAccess.Entities;
 
 public class TokenEntity
 {
