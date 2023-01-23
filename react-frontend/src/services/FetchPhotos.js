@@ -32,7 +32,7 @@ export async function GetPhotos(photoId, setLoading) {
   try {
     const response = await axios.get(`/Photo/GetPhotos/${photoId}`, { signal });
     if (response.status === 200) {
-      data = response.data.value;
+      data = response.data;
     } else {
       error = {
         message: "There was an error processing your request",
@@ -62,10 +62,9 @@ export async function GetPhoto(photoId, photoName, setLoading) {
   let data = null;
   let error = null;
   try {
-    const response = await axios.get(
-      `/Photo/GetPhoto/${photoId}/${photoName}`,
-      { signal }
-    );
+    const response = await axios.get(`/Photo/GetPhoto/${photoId}/${photoName}`,{ signal });
+
+   
     if (response.status === 200) {
       data = response.request.responseURL;
     } else {

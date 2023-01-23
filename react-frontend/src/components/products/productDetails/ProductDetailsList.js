@@ -14,16 +14,18 @@ function ProductDetailsList(props) {
   const [currentPhoto, setCurrentPhoto] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [loading,setLoading]=useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     getCurrentPhoto(props.id, props.images[currentIndex]);
   }, [currentIndex]);
 
-  function getCurrentPhoto(productId, image) {
-    const response = GetPhoto(productId, image);
-    response.then((value) => {
-      setCurrentPhoto(value);
-    });
+  async function getCurrentPhoto(productId, image) {
+    const {data,error}  = await GetPhoto(productId, image,setLoading);
+    if (error) {setError(error);}
+    else{setCurrentPhoto(data);}
+
   }
 
   function goToPrevious() {
@@ -45,6 +47,9 @@ function ProductDetailsList(props) {
   }
   return (
     <>
+    
+    {loading && <div>Loading...</div>}
+    {error && <div>{error.message}</div>}
       <div className={classes.grid}>
         <div className={classes.largeImage}>
           <figure>
