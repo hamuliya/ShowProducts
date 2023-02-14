@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-
-using WebAPI.Global.Encode;
-using WebAPI.Global.Hashing;
-using WebAPI.Global.Token;
+using WebAPI.Global.Middleware.Jwt.Interface;
+using WebAPI.Infrastructure.Encode.Interface;
+using WebAPI.Infrastructure.Hashing.Interface;
+using WebAPI.Infrastructure.Validation.Interface;
 using WebAPI.Models.Auth;
 using WebAPI.Models.Login;
 using WebAPI.Models.Token;
@@ -15,26 +15,32 @@ using WebAPI.Models.Token;
 
 namespace WebAPI.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly IHashing _hashing;
     private readonly IConfiguration _configuration;
-    private readonly IToken _token;
+    
     private readonly IEncode _encode;
     private readonly ITokenService _tokenService;
+    private readonly IValidationFilter _validationFilter;
+    private readonly IJwtMiddleware _jwt;
 
-    public AuthController(IUserService userService,IHashing hashing,IConfiguration configuration,IToken token,IEncode encode,ITokenService tokenService)
+    public AuthController(IUserService userService,IHashing hashing,IConfiguration configuration,IEncode encode,ITokenService tokenService,IValidationFilter validationFilter,IJwtMiddleware jwt)
     {
         _userService = userService;
         _hashing = hashing;
         _configuration = configuration;
-        _token = token;
+      
         _encode = encode;
         _tokenService = tokenService;
+        _validationFilter = validationFilter;
+        _jwt = jwt;
     }
+
+
 
 
 
@@ -43,13 +49,13 @@ public class AuthController : ControllerBase
     {
 
         // Validate the username
-        if (!UserNameValidator(userRegister.UserName))
+        if (!_validationFilter.UserNameValidator(userRegister.UserName))
         {
             return BadRequest("Invalid username");
         }
 
         // Validate the password
-        if (!PasswordValidator(userRegister.Password))
+        if (!_validationFilter.PasswordValidator(userRegister.Password))
         {
             return BadRequest("Invalid password");
         }
@@ -83,7 +89,7 @@ public class AuthController : ControllerBase
            if (userId ==null) return BadRequest("Not inserted ");
             
            //Generate RefreshToken
-           var refreshToken=_token.GenerateRefreshToken();
+           var refreshToken =_jwt.GenerateRefreshToken();
 
 
            //Insert RefreshToken into Database
@@ -113,13 +119,13 @@ public class AuthController : ControllerBase
     {
 
         // Validate the username
-        if (!UserNameValidator(userLogin.UserName))
+        if (!_validationFilter.UserNameValidator(userLogin.UserName))
         {
             return BadRequest("Invalid username");
         }
 
         // Validate the password
-        if ( !PasswordValidator(userLogin.Password))
+        if ( !_validationFilter.PasswordValidator(userLogin.Password))
         {
             return BadRequest("Invalid password");
         }
@@ -166,11 +172,11 @@ public class AuthController : ControllerBase
         var issuer = jwtSection.GetValue<string>("Issuer");
         var audience = jwtSection.GetValue<string>("Audience");
         var encodeKey =_encode.Encode(jwtSection.GetValue<string>("Key"));
-        var expires = DateTime.Now.AddDays(1);
+        var expires = DateTime.Now.AddDays(7);
 
-        var accessToken = _token.GenerateAccessToken(claims, issuer, audience, expires, encodeKey);
+        var accessToken = _jwt.GenerateAccessToken(claims, issuer, audience, expires, encodeKey);
 
-        var refreshToken = _token.GenerateRefreshToken();
+        var refreshToken = _jwt.GenerateRefreshToken();
 
     
 
@@ -214,15 +220,12 @@ public class AuthController : ControllerBase
     }
 
 
-
     [HttpPost]
     [Route("RefreshToken")]
     public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
     {
         try
         {
-           
-
             string? accessToken = tokenModel.AccessToken;
             string? refreshToken = tokenModel.RefreshToken;
 
@@ -243,7 +246,7 @@ public class AuthController : ControllerBase
             var encodeKey = _encode.Encode(_configuration.GetSection("Jwt:Key").Value);
 
 
-            var principal = _token.GetPrincipalFromExpiredToken(tokenModel.Issuer, tokenModel.Audience, encodeKey, accessToken);
+            var principal = _jwt.GetPrincipalFromExpiredToken(tokenModel.Issuer, tokenModel.Audience, encodeKey, accessToken);
 
 
             var username = principal.Identity.Name; //this is mapped to the Name claim by default
@@ -264,9 +267,9 @@ public class AuthController : ControllerBase
             string? audience = _configuration.GetSection("Jwt:Audience").Value;
             var expires = DateTime.Now.AddDays(7);
 
-            var newAccessToken = _token.GenerateAccessToken(principal.Claims, issuer, audience, expires, encodeKey);
+            var newAccessToken = _jwt.GenerateAccessToken(principal.Claims, issuer, audience, expires, encodeKey);
 
-            var newRefreshToken = _token.GenerateRefreshToken();
+            var newRefreshToken = _jwt.GenerateRefreshToken();
             refreshTokenDB.RefreshToken = newRefreshToken;
             refreshTokenDB.RefreshTokenExpiry = expires;
             refreshTokenDB.UserId = userDB.UserId;
@@ -290,12 +293,8 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-
             return BadRequest(ex.Message);
         }
-
-
-
     }
 
 
@@ -308,7 +307,6 @@ public class AuthController : ControllerBase
         ClientTokenModel newToken = new ClientTokenModel();
         newToken.Expiry = DateTime.Now.AddDays(expiryDays);
         newToken.Token = token;
-
 
         var cookieOptions = new CookieOptions
         {
@@ -323,72 +321,7 @@ public class AuthController : ControllerBase
 
 
 
-    private static bool UserNameValidator(string userName)
-    {
-
-        bool result = false;
-        if (string.IsNullOrEmpty(userName) || userName.Length < 3 || userName.Length > 50)
-        {
-            return result;
-        }
-        result = true;
-        return result;
-
-    }
-
-        private static bool PasswordValidator(string password)
-    {
-
-        bool result = false;
-
-        //Check if the password length is between 8 and 50
-        if (string.IsNullOrEmpty(password) || password.Length < 8 ||password.Length > 50)
-            return result;
-
-        // Check if the password includes at least one capital letter
-        bool hasCapitalLetter = false;
-        foreach (char c in password)
-        {
-            if (char.IsUpper(c))
-            {
-                hasCapitalLetter = true;
-                break;
-            }
-        }
-
-
-        if (!hasCapitalLetter)
-        {
-            Console.WriteLine("Password must include at least one capital letter");
-            return result;
-        }
-
-        // Check if the password includes at least one special character
-        bool hasSpecialCharacter = false;
-        foreach (char c in password)
-        {
-            if (!char.IsLetterOrDigit(c))
-            {
-                hasSpecialCharacter = true;
-                break;
-            }
-        }
-
-        if (!hasSpecialCharacter)
-        {
-            Console.WriteLine("Password must include at least one special character");
-            return result;
-        }
-
-
-       
-        result=true;
-       
-
-        return result;
-
-    }
-
+  
 
    
 

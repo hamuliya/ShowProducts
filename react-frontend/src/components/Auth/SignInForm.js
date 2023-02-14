@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import Card from "../ui/Card";
 import classes from "../Form.module.css";
 import { Link } from "react-router-dom";
+import { login } from "../../services/FethAuth";
 
 function SignInForm() {
   const userNameInputRef = useRef();
@@ -13,23 +14,25 @@ function SignInForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    //   try {
-    //     const enteredUserName = userNameInputRef.current.value;
-    //     const enteredPassword = passwordInputRef.current.value;
+    try {
+        const enteredUserName = userNameInputRef.current.value;
+        const enteredPassword = passwordInputRef.current.value;
+        let response=await login({userName:enteredUserName,password:enteredPassword});
+        if (response.status==200)
+        {
+          let data=response.data;
+          e.target.reset();
+        }
+        else
+        {
+          alert(response.data);
+          console.log(response);
+        }
 
-    //     const response = await fetch('/api/authenticate', {
-    //       method: 'POST',
-    //       body: JSON.stringify({ username, password }),
-    //       headers: { 'Content-Type': 'application/json' },
-    //     });
-    //     const data = await response.json();
-    //     if (!response.ok) {
-    //       throw new Error(data.message);
-    //     }
-    //     //onAuthenticate(data.token);
-    //   } catch (err) {
-    //     setError(err.message);
-    //   }
+
+      } catch (err) {
+        setError(err.message);
+      }
   }
 
   return (
@@ -47,8 +50,6 @@ function SignInForm() {
           </div>
           <div className={classes.inputitem}>
             <label htmlFor="password">Password:</label>
-          
-
             <input
               type="password"
               id="password"

@@ -92,8 +92,8 @@ public class ProductController : ControllerBase
 
     }
 
-
-
+    
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> InsertProduct(ProductEntity product)
     {
@@ -110,7 +110,7 @@ public class ProductController : ControllerBase
             return (StatusCode(500, ex.Message));
         }
     }
-
+    [Authorize]
     [HttpPut]
     public async Task<IActionResult> UpdateProduct(ProductEntity product)
     {
@@ -128,7 +128,7 @@ public class ProductController : ControllerBase
         }
     }
 
-
+    [Authorize]
     [HttpDelete]
     public async Task<IActionResult> DeleteProduct(int id)
     {

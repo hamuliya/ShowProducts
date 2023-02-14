@@ -1,8 +1,13 @@
 import React, { useRef, useState,useEffect } from "react";
 import Card from "../../ui/Card";
 import classes from "../../Form.module.css";
-import { InsertProduct } from "../../../services/FetchProducts";
-import { UploadPhoto } from "../../../services/FetchPhotos";
+import { insertProduct } from "../../../services/FetchProducts";
+import { uploadPhoto } from "../../../services/FetchPhotos";
+import { toast } from 'react-toastify';
+import Modal from "../../ui/Modal";
+
+
+
 
 export default function UploadProductsForm() {
   const titleInputRef = useRef();
@@ -13,24 +18,50 @@ export default function UploadProductsForm() {
   const [isSelected, setIsSelected] = useState(false);
   const [imgFiles, setImgFiles] = useState([]);
   const [urlFiles, setUrlFiles] = useState([]);
+ 
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [title,setTitle]=useState(null);
+  const [errorMessage,setErrorMessage]=useState(null);
+ 
 
   const toDay = new Date().toISOString().substring(0, 10);
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_FILE_TYPES = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+  const FILE_TYPES="image/jpg, image/jpeg, image/png, image/gif";
+
 
   useEffect(()=>console.log(imgFiles),[imgFiles]);
 
   function uploadPhotos(photoID, photos) {
     photos.map((photo) => {
-      UploadPhoto(photoID, photo);
+      uploadPhoto(photoID, photo);
     });
   }
 
   function imgFileshandler(event) {
-   
-    if (event.target.files.length !== 0) {
+    const selectedFile = event.target.files[0];
+    if (selectedFile)
+    {
+      if (selectedFile.size > MAX_FILE_SIZE) {
+      
+        setErrorMessage(`File size must be less than ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+        setModalOpen(true);
+        return;
+    }
+
+      if (!ALLOWED_FILE_TYPES.includes(selectedFile.type)) {
+      setErrorMessage("Invalid file type. Only jpg, jpeg, png, gif are allowed.");
+      setModalOpen(true);
+      return;
+    }
       setUrlFiles([...urlFiles, URL.createObjectURL(event.target.files[0])]);
       setImgFiles([...imgFiles, event.target.files[0]]);
       setIsSelected(true);
-    }
+
+    } 
+  
   }
 
  function removeFileHandler(file, index) {
@@ -44,36 +75,41 @@ export default function UploadProductsForm() {
         temp.push(imgFile);
       }
     });
-
     setImgFiles(temp);
-   
   }
-
 
 
   async function submitHandler(event) {
     event.preventDefault();
+  
     const enteredTitle = titleInputRef.current.value;
     const enteredDate = dateInputRef.current.value;
     const enteredDescription = descriptionInputRef.current.value;
 
     if (imgFiles.length > 0) {
-      const photoID = await InsertProduct(
-        enteredTitle,
-        enteredDate,
-        enteredDescription
-      );
-      uploadPhotos(photoID, imgFiles);
-      event.target.reset();
-      setUrlFiles([]);
-      setImgFiles([]);
-      setIsSelected(false);
-      alert("Upload Success.");
-    } else {
-      alert("Please choose Photo.");
-    }
-  }
+      await insertProduct({title:enteredTitle,uploadDate:enteredDate,detail:enteredDescription})
+      .then((photoID) => {
+        uploadPhotos(photoID, imgFiles);
+        event.target.reset();
+        setUrlFiles([]);
+        setImgFiles([]);
+        setIsSelected(false);
+        toast.success('Upload Success.', {
+          position: toast.POSITION.BOTTOM_CENTER,
+      });
 
+      })
+      .catch((error) => {
+        toast.error("Error: " + error.message,{position:toast.POSITION.BOTTOM_CENTER});
+      });
+  }
+  else
+  {
+    setErrorMessage("Please choose photos");
+    setModalOpen(true);
+    return;
+  }
+  }
   return (
     <Card>
       <form className={classes.form} onSubmit={submitHandler}>
@@ -121,7 +157,9 @@ export default function UploadProductsForm() {
               required
               ref={photosInputRef}
               onChange={imgFileshandler}
-              accept="image/png, image/gif, image/jpeg"
+              accept={FILE_TYPES}
+
+              
            />
             {isSelected ? (
               <div className={classes.photolists}>
@@ -157,7 +195,9 @@ export default function UploadProductsForm() {
             <button type="submit">Upload</button>
           </div>
         </div>
+        {modalOpen && <Modal title={title} message={errorMessage} setOpenModal={setModalOpen} />}
       </form>
+   
     </Card>
   );
 }

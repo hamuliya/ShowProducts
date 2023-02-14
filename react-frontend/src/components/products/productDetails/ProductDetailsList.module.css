@@ -84,9 +84,6 @@
   position: sticky;
   overflow-y: hidden;
   scrollbar-width: none; 
-
-
-
 }
 
 .smallAreaFrame::-webkit-scrollbar {

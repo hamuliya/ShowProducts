@@ -4,7 +4,7 @@ import 'abortcontroller-polyfill/dist/polyfill-patch-fetch';
 
 
 
-export async function GetProducts(setLoading) {
+export async function getProducts(setLoading) {
   setLoading(true);
   const response =await axios.get("/Product");
   setLoading(false);
@@ -12,10 +12,7 @@ export async function GetProducts(setLoading) {
 }
 
 
-
-
-
-export async function GetProduct(id, setLoading) {
+export async function getProduct(id, setLoading) {
   setLoading(true);
   const controller = new AbortController();
   const signal = controller.signal;
@@ -52,7 +49,7 @@ export async function GetProduct(id, setLoading) {
 
 
 
-export async function DeleteProduct(id) {
+export async function deleteProduct(id) {
   await axios
     .delete(`/Product/${id}`)
     .then((res) => {
@@ -67,31 +64,43 @@ export async function DeleteProduct(id) {
 
 
 
-export async function UpdateProduct({id,title,updateDate,detail}) {
-  await axios
-    .put(`/Product/${id}`, {
-      title: title,
-      updateDate:updateDate,
-      detail:detail,
-    })
-    .then((res) => {
-      console.log(res.data);
-      alert("Product updated!");
-    })
-    .then((result) => console.log("Success:", result))
-    .catch((error) => console.log("Error", error));
+// export async function UpdateProduct({id,title,updateDate,detail}) {
+//   await axios
+//     .put(`/Product/${id}`, {
+//       title: title,
+//       updateDate:updateDate,
+//       detail:detail,
+//     })
+//     .then((res) => {
+//       console.log(res.data);
+//       alert("Product updated!");
+//     })
+//     .then((result) => console.log("Success:", result))
+//     .catch((error) => console.log("Error", error));
+// }
+
+// export async function InsertProduct(title, uploadDate, detail) {
+//   const response = await axios.post("Product", {
+//     title: title,
+//     uploadDate: uploadDate,
+//     detail: detail,
+//   });
+
+
+//   return response.data;
+// }
+
+export async function insertProduct({ title, uploadDate, detail }) {
+  try {
+    const { data } = await axios.post(`Product`, { title, uploadDate, detail });
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
 
-export async function InsertProduct(title, uploadDate, detail) {
-  const response = await axios.post("Product", {
-    title: title,
-    uploadDate: uploadDate,
-    detail: detail,
-  });
 
-
-  return response.data;
-}
 
 
 //const api = axios.create({

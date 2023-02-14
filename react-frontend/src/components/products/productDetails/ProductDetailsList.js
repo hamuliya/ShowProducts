@@ -1,7 +1,7 @@
 import React from "react";
 
 import classes from "./ProductDetailsList.module.css";
-import { GetPhoto } from "../../../services/FetchPhotos";
+import { getPhoto } from "../../../services/FetchPhotos";
 import { useState, useEffect } from "react";
 import ProductDetailsItem from "./ProductDetailsItem";
 import { LazyLoadImage } from "react-lazy-load-image-component";
@@ -22,7 +22,7 @@ function ProductDetailsList(props) {
   }, [currentIndex]);
 
   async function getCurrentPhoto(productId, image) {
-    const {data,error}  = await GetPhoto(productId, image,setLoading);
+    const {data,error}  = await getPhoto(productId, image,setLoading);
     if (error) {setError(error);}
     else{setCurrentPhoto(data);}
 
@@ -33,6 +33,7 @@ function ProductDetailsList(props) {
     const newIndex = isFirstSlide ? props.images.length - 1 : currentIndex - 1;
     setCurrentIndex(newIndex);
   }
+
   function goToNext() {
     const isLastSlide = currentIndex === props.images.length - 1;
     const newIndex = isLastSlide ? 0 : currentIndex + 1;
@@ -91,17 +92,6 @@ function ProductDetailsList(props) {
             style={{
               transform:` translateX(calc(-${currentIndex} * 9rem))`
             }}
-
-
-
-            // style={{
-            //   transform: `translateX(-${
-            //     currentIndex * (100 / props.images.length)
-            //   }%)`,
-            // }}
-
-            
-
           >
             {props.images.map((image, index) => (
               <div key={index} onClick={() => goToSlide(index)}>

@@ -2,8 +2,8 @@ import React from "react";
 import Card from "../../ui/Card";
 import classes from "./ProductItem.module.css";
 import { Link } from "react-router-dom";
-import { GetPhoto } from "../../../services/FetchPhotos";
-import { GetPhotos } from "../../../services/FetchPhotos";
+import { getPhoto } from "../../../services/FetchPhotos";
+import { getPhotos } from "../../../services/FetchPhotos";
 import { useEffect } from "react";
 import { useState } from "react";
 import { FormatDate, UppcaseFirstLetter } from "../../../lib/Format";
@@ -21,7 +21,7 @@ function ProductItem(props) {
   }, [props.id]);
 
   async function getAllPhotos(productId) {
-    const {data,error} = await GetPhotos(productId,setLoading);
+    const {data,error} = await getPhotos(productId,setLoading);
     if (error) {setError(error);}
     else{
       setPhotos(data);
@@ -32,7 +32,7 @@ function ProductItem(props) {
 
   async function getFirstPhoto(productId, firstPhotoName) {
     setLoading(false);
-    const {data,error} =await GetPhoto(productId, firstPhotoName,setLoading);
+    const {data,error} =await getPhoto(productId, firstPhotoName,setLoading);
     if (error) {setError(error);}
     else{
       setImage(data);

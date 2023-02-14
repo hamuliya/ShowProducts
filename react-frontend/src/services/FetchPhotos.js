@@ -1,29 +1,29 @@
 import axios from "axios";
 import "abortcontroller-polyfill/dist/polyfill-patch-fetch";
 
-
-export async function UploadPhoto(photoID, photo) {
-  var bodyFormData = new FormData();
+export async function uploadPhoto(photoID, photo) {
+  const bodyFormData = new FormData();
   bodyFormData.append("PhotoID", photoID);
   bodyFormData.append("Photo", photo);
+
   try {
-    const response = await axios({
-      method: "post",
-      url: "/Photo/UploadPhoto",
-      data: bodyFormData,
+    const response = await axios.post("/Photo/UploadPhoto", bodyFormData, {
       headers: { "Content-Type": "multipart/form-data" },
-      timeout: 10000, //10 seconds
+      timeout: 10000, // 10 seconds
     });
-    console.log(response);
-    return response;
+
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      throw new Error(`Request failed with status code: ${response.status}`);
+    }
   } catch (error) {
-    console.log(error);
-    return error;
+    console.error(error);
+    throw error;
   }
 }
 
-
-export async function GetPhotos(photoId, setLoading) {
+export async function getPhotos(photoId, setLoading) {
   setLoading(true);
   const controller = new AbortController();
   const signal = controller.signal;
@@ -55,7 +55,7 @@ export async function GetPhotos(photoId, setLoading) {
 
 
 
-export async function GetPhoto(photoId, photoName, setLoading) {
+export async function getPhoto(photoId, photoName, setLoading) {
   setLoading(true);
   const controller = new AbortController();
   const signal = controller.signal;

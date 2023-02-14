@@ -1,6 +1,6 @@
 import React from 'react'
 import { useState,useEffect } from 'react';
-import { GetPhoto } from '../../../services/FetchPhotos';
+import { getPhoto } from '../../../services/FetchPhotos';
 import { LazyLoadImage } from "react-lazy-load-image-component";
 
 function ProductDetailsItem(props) {
@@ -11,7 +11,7 @@ function ProductDetailsItem(props) {
     useEffect(()=>{showPhoto(props.id,props.image)},[]);
 
     async function showPhoto(productId, image) {
-          const {data,error} = await GetPhoto(productId,image,setLoading);
+          const {data,error} = await getPhoto(productId,image,setLoading);
           if (error){setError(error)} 
           else{setPhoto(data); }
       }

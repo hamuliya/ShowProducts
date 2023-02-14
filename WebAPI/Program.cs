@@ -5,11 +5,16 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
-using WebAPI.Global.Encode;
-using WebAPI.Global.ExceptionFilter;
-using WebAPI.Global.Hashing;
-
-using WebAPI.Global.Token;
+using WebAPI.Global.Middleware.Jwt.Interface;
+using WebAPI.Global.Middleware.Jwt.Services;
+using WebAPI.Infrastructure.Encode.Interface;
+using WebAPI.Infrastructure.Encode.Services;
+using WebAPI.Infrastructure.ExceptionFilter.Interface;
+using WebAPI.Infrastructure.ExceptionFilter.Services;
+using WebAPI.Infrastructure.Hashing.Interface;
+using WebAPI.Infrastructure.Hashing.Services;
+using WebAPI.Infrastructure.Validation.Interface;
+using WebAPI.Infrastructure.Validation.Services;
 
 // Create a logger factory
 var loggerFactory = LoggerFactory.Create(builder =>
@@ -24,8 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add the logger factory to the container
 builder.Services.AddSingleton(loggerFactory);
 
-// Add Controllers
-builder.Services.AddControllers();
+
 
 //Add Swagger/OpenAPI
 //The AddEndpointsApiExplorer method is used to add the IApiDescriptionGroupCollectionProvider service to the application's service container.
@@ -83,16 +87,19 @@ builder.Services.AddAuthentication(options =>
     var jwtSection = configuration.GetSection("Jwt");
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = jwtSection.GetValue<bool>("ValidateIssuer"),
-        ValidateAudience = jwtSection.GetValue<bool>("ValidateAudience"),
-        ValidateLifetime = jwtSection.GetValue<bool>("ValidateLifetime"),
-        ValidateIssuerSigningKey = jwtSection.GetValue<bool>("ValidateIssuerSigningKey"),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSection["Issuer"],
         ValidAudience = jwtSection["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]))
 
 };
 });
+
+// Add Controllers
+builder.Services.AddControllers();
 
 builder.Services.AddAuthorization();
 
@@ -109,10 +116,13 @@ builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
 builder.Services.AddSingleton<IProductService, ProductService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
+builder.Services.AddTransient<IValidationFilter, ValidationFilter>();
 builder.Services.AddTransient<IHashing, BCryptHashing>();
-builder.Services.AddTransient<IToken, Token>();
+builder.Services.AddTransient<IJwtMiddleware, JwtMiddleware>();
 builder.Services.AddTransient<IEncode, UTF8>();
-builder.Services.AddScoped<IExceptionFilter,ExceptionFilter>();
+builder.Services.AddScoped<IExceptionHandler, ExceptionFilter>();
+
+
 
 
 var app = builder.Build();
